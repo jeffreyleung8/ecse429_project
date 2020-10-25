@@ -13,6 +13,8 @@ import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.MessageDigest;
@@ -40,22 +42,42 @@ class UnitTests {
 	}
 
 	@Test
-	void testGetTodos() {
+	void testGetTodos() throws JSONException {
 		JSONObject s1 = sendRequest("GET", BASE_URL, "todos", "");
 		System.out.println(s1);
 	}
 	
-	private static JSONObject sendRequest(String requestType, String baseUrl, String path, String parameters) {
+	@Test
+	void testPostNewTodos() throws JSONException {
+		String param = ("{\"title\": \"woo\"}");
+		JSONObject s1 = sendRequest("POST", BASE_URL, "todos", param);
+		System.out.println(s1);
+	}
+	
+	private static JSONObject sendRequest(String requestType, String baseUrl, String path, String body) {
         try {
-            URL url = new URL(baseUrl + path + ((parameters == null) ? "" : ("?" + parameters)));
+            URL url = new URL(baseUrl + path);
             System.out.println("Sending: " + url.toString());
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            
+            connection.setDoInput(true);
+            connection.setDoOutput(true);
+            
             connection.setRequestMethod(requestType);
             connection.setRequestProperty("Accept", "application/json");
-            if (connection.getResponseCode() != 200) {
+            connection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+            
+            if(body != "") {
+            	OutputStreamWriter writer = new OutputStreamWriter(connection.getOutputStream(), "UTF-8");
+                writer.write(body);
+                writer.close();
+            }
+            
+            if (connection.getResponseCode() != 200 && connection.getResponseCode() != 201) {
                 throw new RuntimeException(
                         url.toString() + " failed : HTTP error code : " + connection.getResponseCode());
             }
+            
             BufferedReader br = new BufferedReader(new InputStreamReader((connection.getInputStream())));
             String response = br.readLine();
             if (response != null) {
