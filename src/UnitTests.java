@@ -6,31 +6,30 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 
 class UnitTests {
 	private final String BASE_URL = "http://localhost:4567/";
-    private JSONObject joResponse;
-    private JSONArray jaResponse;
 
 	@BeforeAll
 	static void setUpBeforeClass() throws Exception {
+		Runtime rt = Runtime.getRuntime();
+		rt.exec("java -jar runTodoManagerRestAPI-1.5.5.jar");
 	}
 
 	@AfterAll
 	static void tearDownAfterClass() throws Exception {
+		shutDown();
+		Runtime rt = Runtime.getRuntime();
+		rt.exec("java -jar runTodoManagerRestAPI-1.5.5.jar");
 	}
 
 	@BeforeEach
@@ -52,6 +51,25 @@ class UnitTests {
 		String param = ("{\"title\": \"woo\"}");
 		JSONObject s1 = sendRequest("POST", BASE_URL, "todos", param);
 		System.out.println(s1);
+	}
+	
+	private static void shutDown() {
+		try {
+			URL url = new URL("http://localhost:4567/shutdown");
+			
+			System.out.println("Sending: " + url.toString());
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            
+            connection.setDoInput(true);
+            connection.setDoOutput(true);
+            
+            connection.setRequestMethod("GET");
+            connection.setRequestProperty("Accept", "application/json");
+            connection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+            connection.getResponseCode();
+			
+		} catch (IOException e) {
+        }
 	}
 	
 	private static JSONObject sendRequest(String requestType, String baseUrl, String path, String body) {
