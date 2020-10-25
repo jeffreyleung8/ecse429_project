@@ -41,11 +41,11 @@ class UnitTests {
 
 	@Test
 	void testGetTodos() {
-		String s1 = sendRequest("GET", BASE_URL, "todos", "");
+		JSONObject s1 = sendRequest("GET", BASE_URL, "todos", "");
 		System.out.println(s1);
 	}
 	
-	public static String sendRequest(String requestType, String baseUrl, String path, String parameters) {
+	private static JSONObject sendRequest(String requestType, String baseUrl, String path, String parameters) {
         try {
             URL url = new URL(baseUrl + path + ((parameters == null) ? "" : ("?" + parameters)));
             System.out.println("Sending: " + url.toString());
@@ -59,10 +59,11 @@ class UnitTests {
             BufferedReader br = new BufferedReader(new InputStreamReader((connection.getInputStream())));
             String response = br.readLine();
             if (response != null) {
+            	JSONObject r = new JSONObject(response);
                 connection.disconnect();
-                return response;
+                return r;
             }
-        } catch (IOException e) {
+        } catch (JSONException | IOException e) {
             e.printStackTrace();
         }
         return null;
