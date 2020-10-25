@@ -1,5 +1,6 @@
 import static org.junit.jupiter.api.Assertions.*;
 
+import org.junit.Assert;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -17,10 +18,10 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 class UnitTests {
-	private final String BASE_URL = "http://localhost:4567/";
-	private final String TITLE_S = "title";
-	private final String DONESTATUS_S = "doneStatus";
-	private final String DESCRIPTION_S = "description";
+	private final static String BASE_URL = "http://localhost:4567/";
+	private final static String TITLE_S = "title";
+	private final static String DONESTATUS_S = "doneStatus";
+	private final static String DESCRIPTION_S = "description";
 	private final static String COMMAND = "java -jar ./runTodoManagerRestAPI-1.5.5.jar";
 	
 
@@ -39,6 +40,12 @@ class UnitTests {
 
 	@BeforeEach
 	void setUp() throws Exception {
+		if(testConnection()) {
+			System.out.println("Set-up\tSystem is ready");
+		} else {
+			System.out.println("Set-up\tError connecting to localhost:4567");
+			Assert.fail();
+		}
 	}
 
 	@AfterEach
@@ -158,6 +165,19 @@ class UnitTests {
 			
 		} catch (IOException e) {
         }
+	}
+	
+	private static boolean testConnection() {
+		try { 
+		    URL url = new URL(BASE_URL);
+		    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+		    connection.connect();
+		    connection.disconnect();
+		    return true;
+		} 
+		catch (IOException e) {   
+		    return false;
+		}
 	}
 	
 	private static int getResponseCode(String requestType, String baseUrl, String path, String body) {
