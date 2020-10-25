@@ -21,19 +21,20 @@ class UnitTests {
 	private final String TITLE_S = "title";
 	private final String DONESTATUS_S = "doneStatus";
 	private final String DESCRIPTION_S = "description";
+	private final static String COMMAND = "java -jar ./runTodoManagerRestAPI-1.5.5.jar";
 	
 
 	@BeforeAll
 	static void setUpBeforeClass() throws Exception {
 		Runtime rt = Runtime.getRuntime();
-		rt.exec("java -jar ./runTodoManagerRestAPI-1.5.5.jar");
+		rt.exec(COMMAND);
 	}
 
 	@AfterAll
 	static void tearDownAfterClass() throws Exception {
 		shutDown();
 		Runtime rt = Runtime.getRuntime();
-		rt.exec("java -jar ./runTodoManagerRestAPI-1.5.5.jar");
+		rt.exec(COMMAND);
 	}
 
 	@BeforeEach
