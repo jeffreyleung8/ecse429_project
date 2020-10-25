@@ -19,7 +19,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 class UnitTests {
-	private final String BASE_URL = "http://localhost:4567/todos";
+	private final String BASE_URL = "http://localhost:4567/";
     private JSONObject joResponse;
     private JSONArray jaResponse;
 
@@ -40,8 +40,8 @@ class UnitTests {
 	}
 
 	@Test
-	void test() {
-		String s1 = sendRequest("GET", BASE_URL, "", "");
+	void testGetTodos() {
+		String s1 = sendRequest("GET", BASE_URL, "todos", "");
 		System.out.println(s1);
 	}
 	
