@@ -19,10 +19,29 @@ import java.net.URL;
 
 class UnitTests {
 	private final static String BASE_URL = "http://localhost:4567/";
+	private final static String COMMAND = "java -jar ./runTodoManagerRestAPI-1.5.5.jar";
+	private final static int OK_CODE = 200;
+	private final static int NOT_FOUND = 404;
+	
+	// parameters to use
 	private final static String TITLE_S = "title";
 	private final static String DONESTATUS_S = "doneStatus";
 	private final static String DESCRIPTION_S = "description";
-	private final static String COMMAND = "java -jar ./runTodoManagerRestAPI-1.5.5.jar";
+	private final static String TITLE1 = "TestTODO1";
+	private final static String TITLE2 = "TestTODO2";
+	private final static String STATUS1 = "true";
+	private final static String STATUS2 = "false";
+	private final static String DESCRIPTION = "none";
+	private final static String PARAM1 = ("{" 
+			+ TITLE_S + ": " + TITLE1 + "," 
+			+ DONESTATUS_S + ": " + STATUS1 + ","
+			+ DESCRIPTION_S + ": " + DESCRIPTION
+			+ "}");
+	private final static String PARAM2 = ("{" 
+			+ TITLE_S + ": " + TITLE2 + "," 
+			+ DONESTATUS_S + ": " + STATUS2 + ","
+			+ DESCRIPTION_S + ": " + DESCRIPTION
+			+ "}");
 	
 
 	@BeforeAll
@@ -52,102 +71,80 @@ class UnitTests {
 	void tearDown() throws Exception {
 	}
 
+	// =====================/todos====================
 	@Test
-	void testGetTodos() throws JSONException {
-		JSONObject obj = sendRequest("GET", BASE_URL, "todos", "");
-
+	void testGetInvalidTodos() throws JSONException {
+		JSONObject obj = sendRequest("POST", BASE_URL, "todos", PARAM1);
+		String id = (String) obj.get("id");
+		
+		// Delete
+		sendRequest("DELETE", BASE_URL, "todos/"+id, "");
+		
+		//Get with invalid filter
+		String filer = "id=" + id;
+		obj = sendRequest("GET", BASE_URL, "todos?" + filer, "");
 		JSONArray todos = obj.getJSONArray("todos");
-		// By default, there are 2 elements in the todo list
-		assertEquals(2, todos.length());
+		
+		assertEquals(0, todos.length());
 		
 		System.out.println("\n");
 	}
 	
 	@Test
 	void testPostNewTodos() throws JSONException {
-		String title = "TestCreateTODO";
-		String param = ("{" + TITLE_S + ": " + title + "}");
-		JSONObject obj = sendRequest("POST", BASE_URL, "todos", param);
+		JSONObject obj = sendRequest("POST", BASE_URL, "todos", PARAM1);
 		
-		assertEquals("false", obj.get(DONESTATUS_S));
-		assertEquals(title, obj.get(TITLE_S));
+		assertEquals(STATUS1, obj.get(DONESTATUS_S));
+		assertEquals(TITLE1, obj.get(TITLE_S));
 		String id = (String) obj.get("id");
 		
-		// There are now 3 elements in the todos
+		// Check there is at least an element in todos
 		obj = sendRequest("GET", BASE_URL, "todos", "");
 		JSONArray todos = obj.getJSONArray("todos");
-		assertEquals(3, todos.length());
+		if(todos.length() < 1){
+			Assert.fail();
+		}
 		
 		// Delete newly added todo
-		obj = sendRequest("DELETE", BASE_URL, "todos/"+id, "");
+		sendRequest("DELETE", BASE_URL, "todos/"+id, "");
 		
 		System.out.println("\n");
 	}
 	
+	// =====================/todos/:id====================
 	@Test
 	void testAmendWithPut() throws JSONException {
-		String title1 = "TestAmendTODO";
-		String param1 = ("{" + TITLE_S + ": " + title1 + "}");
-		String title2 = "TestAmended";
-		String status = "true";
-		String des = "none";
-		String param2 = ("{" 
-				+ TITLE_S + ": " + title2 + "," 
-				+ DONESTATUS_S + ": " + status + ","
-				+ DESCRIPTION_S + ": " + des
-				+ "}");
-		
-		// Create new obj
-		JSONObject obj = sendRequest("POST", BASE_URL, "todos", param1);
-		assertEquals(title1, obj.get("title"));
-		
+		JSONObject obj = sendRequest("POST", BASE_URL, "todos", PARAM1);
 		String id = (String) obj.get("id");
 		
-		// Change title and status
-		obj = sendRequest("PUT", BASE_URL, "todos/"+id, param2);
-		assertEquals(title2, obj.get(TITLE_S));
-		assertEquals(status, obj.get(DONESTATUS_S));
-		assertEquals(des, obj.get(DESCRIPTION_S));
+		// Change title and status and assert info
+		obj = sendRequest("PUT", BASE_URL, "todos/"+id, PARAM2);
+		assertEquals(TITLE2, obj.get(TITLE_S));
+		assertEquals(STATUS2, obj.get(DONESTATUS_S));
+		assertEquals(DESCRIPTION, obj.get(DESCRIPTION_S));
 		
 		
 		// Delete newly added todo
-		obj = sendRequest("DELETE", BASE_URL, "todos/"+id, "");
+		sendRequest("DELETE", BASE_URL, "todos/"+id, "");
 		
 		System.out.println("\n");
 	}
 	
 	@Test
-	void testAmendWithPost() throws JSONException {
-		String title1 = "TestAmendTODO";
-		String param1 = ("{" + TITLE_S + ": " + title1 + "}");
-		String title2 = "TestAmended";
-		String status = "true";
-		String des = "none";
-		String param2 = ("{" 
-				+ TITLE_S + ": " + title2 + "," 
-				+ DONESTATUS_S + ": " + status + ","
-				+ DESCRIPTION_S + ": " + des
-				+ "}");
-		
-		// Create new obj
-		JSONObject obj = sendRequest("POST", BASE_URL, "todos", param1);
-		assertEquals(title1, obj.get("title"));
+	void testDoubleDelete() throws JSONException {
+		JSONObject obj = sendRequest("POST", BASE_URL, "todos", PARAM1);
 		
 		String id = (String) obj.get("id");
-		
-		// Change title and status
-		obj = sendRequest("POST", BASE_URL, "todos/"+id, param2);
-		assertEquals(title2, obj.get(TITLE_S));
-		assertEquals(status, obj.get(DONESTATUS_S));
-		assertEquals(des, obj.get(DESCRIPTION_S));
-		
-		
-		// Delete newly added todo
-		obj = sendRequest("DELETE", BASE_URL, "todos/"+id, "");
+
+		// Delete twice should give error
+		getResponseCode("DELETE", BASE_URL, "todos/"+id, "");		
+		int error2 = getResponseCode("DELETE", BASE_URL, "todos/"+id, "");
+		assertEquals(NOT_FOUND, error2);
 		
 		System.out.println("\n");
 	}
 	
+	// =====================helper methods====================
 	private static void shutDown() {
 		try {
 			URL url = new URL("http://localhost:4567/shutdown");
