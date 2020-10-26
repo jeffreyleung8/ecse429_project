@@ -12,10 +12,12 @@ class UnitTests {
 		if(Client.testConnection(Const.BASE_URL)) {
 			System.out.println("Start\tSystem is ready");
 		} else {
+			System.out.println("Error\tlocalhost:4567 is not ready");
 			System.out.println("Start\tStarting the System Now");
 			Runtime rt = Runtime.getRuntime();
 			rt.exec(Const.COMMAND);
 		}
+		
 	}
 
 	@AfterAll
@@ -53,8 +55,6 @@ class UnitTests {
 		JSONArray todos = obj.getJSONArray("todos");
 
 		assertEquals(0, todos.length());
-
-		System.out.println("\n");
 	}
 
 	@Test
@@ -74,8 +74,6 @@ class UnitTests {
 
 		// Delete newly added todo
 		Client.sendRequest("DELETE", Const.BASE_URL, "todos/"+id, "");
-
-		System.out.println("\n");
 	}
 
 	// =====================/todos/:id====================
@@ -93,8 +91,6 @@ class UnitTests {
 
 		// Delete newly added todo
 		Client.sendRequest("DELETE", Const.BASE_URL, "todos/"+id, "");
-
-		System.out.println("\n");
 	}
 
 	@Test
@@ -107,8 +103,6 @@ class UnitTests {
 		Client.sendRequest("DELETE", Const.BASE_URL, "todos/"+id, "");
 		int err = Client.getResponseCode("DELETE", Const.BASE_URL, "todos/"+id, "");
 		assertEquals(Const.NOT_FOUND, err);
-
-		System.out.println("\n");
 	}
 
 	// =====================/todos/:id/tasksof====================
@@ -128,8 +122,6 @@ class UnitTests {
 
 		Client.sendRequest("DELETE", Const.BASE_URL, "todos/"+idtodo+"/tasksof/"+idproject, "");
 		Client.sendRequest("DELETE", Const.BASE_URL, "projects/"+idproject, "");
-
-		System.out.println("\n");
 	}
 	// =====================/todos/:id/categories====================
 	@Test
@@ -148,8 +140,6 @@ class UnitTests {
 
 		Client.sendRequest("DELETE", Const.BASE_URL, "todos/"+idtodo+"/categories/"+idcategory, "");
 		Client.sendRequest("DELETE", Const.BASE_URL, "categories/"+idcategory, "");
-
-		System.out.println("\n");
 	}
 
 	// =====================/projects====================
