@@ -56,6 +56,18 @@ class UnitTests {
 
 		assertEquals(0, todos.length());
 	}
+	
+	@Test
+	void testGetTodoXML() throws JSONException {
+		JSONObject obj = Client.sendRequest("POST", Const.BASE_URL, "todos", Const.TODO_PARAM1);
+		String id = (String) obj.get(Const.ID);
+
+		String response = Client.sendRequestXML("GET", Const.BASE_URL, "todos", "");
+		String expectedTitle = "<title>" + Const.TITLE1 + "</title>";
+		Assert.assertTrue(response.contains(expectedTitle));
+		
+		Client.sendRequest("DELETE", Const.BASE_URL, "todos/"+id, "");
+	}
 
 	@Test
 	void testPostNewTodo() throws JSONException {
