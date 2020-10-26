@@ -103,7 +103,7 @@ public class Client {
                 return r;
             }
         } catch (JSONException | IOException e) {
-            e.printStackTrace();
+            //e.printStackTrace();
         }
         return null;
     }

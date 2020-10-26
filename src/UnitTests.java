@@ -9,8 +9,13 @@ import org.json.JSONObject;
 class UnitTests {
 	@BeforeAll
 	static void setUpBeforeClass() throws Exception {
-		Runtime rt = Runtime.getRuntime();
-		rt.exec(Const.COMMAND);
+		if(Client.testConnection(Const.BASE_URL)) {
+			System.out.println("Start\tSystem is ready");
+		} else {
+			System.out.println("Start\tStarting the System Now");
+			Runtime rt = Runtime.getRuntime();
+			rt.exec(Const.COMMAND);
+		}
 	}
 
 	@AfterAll
@@ -36,11 +41,10 @@ class UnitTests {
 
 	// =====================/todos====================
 	@Test
-	void testTodoGetInvalid() throws JSONException {
+	void testGetInvalidTodo() throws JSONException {
 		JSONObject obj = Client.sendRequest("POST", Const.BASE_URL, "todos", Const.TODO_PARAM1);
 		String id = (String) obj.get(Const.ID);
 
-		// Delete
 		Client.sendRequest("DELETE", Const.BASE_URL, "todos/"+id, "");
 
 		//Get with invalid filter
@@ -54,7 +58,7 @@ class UnitTests {
 	}
 
 	@Test
-	void testTodoPostNew() throws JSONException {
+	void testPostNewTodo() throws JSONException {
 		JSONObject obj = Client.sendRequest("POST", Const.BASE_URL, "todos", Const.TODO_PARAM1);
 
 		assertEquals(Const.TRUE, obj.get(Const.DONESTATUS_S));
@@ -76,7 +80,7 @@ class UnitTests {
 
 	// =====================/todos/:id====================
 	@Test
-	void testTodoAmendWithPut() throws JSONException {
+	void testPutTodoAmend() throws JSONException {
 		JSONObject obj = Client.sendRequest("POST", Const.BASE_URL, "todos", Const.TODO_PARAM1);
 		String id = (String) obj.get(Const.ID);
 
@@ -94,22 +98,22 @@ class UnitTests {
 	}
 
 	@Test
-	void testTodoDoubleDelete() throws JSONException {
+	void testDeleteTodoInvalid() throws JSONException {
 		JSONObject obj = Client.sendRequest("POST", Const.BASE_URL, "todos", Const.TODO_PARAM1);
 
 		String id = (String) obj.get(Const.ID);
 
 		// Delete twice should give error
 		Client.sendRequest("DELETE", Const.BASE_URL, "todos/"+id, "");
-		int error2 = Client.getResponseCode("DELETE", Const.BASE_URL, "todos/"+id, "");
-		assertEquals(Const.NOT_FOUND, error2);
+		int err = Client.getResponseCode("DELETE", Const.BASE_URL, "todos/"+id, "");
+		assertEquals(Const.NOT_FOUND, err);
 
 		System.out.println("\n");
 	}
 
 	// =====================/todos/:id/tasksof====================
 	@Test
-	void testTodoPostTasksof() throws JSONException {
+	void testPostTodoTasksof() throws JSONException {
 		JSONObject proj_obj = Client.sendRequest("POST", Const.BASE_URL, "projects", Const.PROJECT_PARAM1);
 		String idproject = (String) proj_obj.get(Const.ID);
 		JSONObject todo_obj = Client.sendRequest("POST", Const.BASE_URL, "todos", Const.TODO_PARAM1);
@@ -129,7 +133,7 @@ class UnitTests {
 	}
 	// =====================/todos/:id/categories====================
 	@Test
-	void testTodoPostCategories() throws JSONException {
+	void testPostTodoCategories() throws JSONException {
 		JSONObject cat_obj = Client.sendRequest("POST", Const.BASE_URL, "categories", Const.CATEGORY_PARAM2);
 		String idcategory = (String) cat_obj.get(Const.ID);
 		JSONObject todo_obj = Client.sendRequest("POST", Const.BASE_URL, "todos", Const.TODO_PARAM1);

@@ -5,7 +5,7 @@
  */
 public class Const {
 	final static String BASE_URL = "http://localhost:4567/";
-	final static String COMMAND = "java -jar ../runTodoManagerRestAPI-1.5.5.jar";
+	final static String COMMAND = "java -jar ./runTodoManagerRestAPI-1.5.5.jar";
 	final static int OK_CODE = 200;
 	final static int CREATED_CODE = 201;
 	final static int NOT_FOUND = 404;
