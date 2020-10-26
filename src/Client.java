@@ -7,14 +7,16 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
-
+/***
+ * Class containing all the methods making requests to the backend server
+ * @author Sophie and Jeffrey
+ *
+ */
 public class Client {
 
-    private final static String BASE_URL = "http://localhost:4567/";
-
-    public static void shutDown() {
+    public static void shutDown(String baseUrl) {
         try {
-            URL url = new URL("http://localhost:4567/shutdown");
+            URL url = new URL(baseUrl + "shutdown");
 
             System.out.println("Sending: GET " + url.toString());
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -31,9 +33,9 @@ public class Client {
         }
     }
 
-    public static boolean testConnection() {
+    public static boolean testConnection(String baseUrl) {
         try {
-            URL url = new URL(BASE_URL);
+            URL url = new URL(baseUrl);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.connect();
             connection.disconnect();
@@ -101,7 +103,7 @@ public class Client {
                 return r;
             }
         } catch (JSONException | IOException e) {
-            //e.printStackTrace();
+            e.printStackTrace();
         }
         return null;
     }
