@@ -243,4 +243,28 @@ class UnitTests2 {
         int code = Client.getResponseCode("POST", Const.BASE_URL, "categories/"+idcategory+"/projects", paramID);
         assertEquals(201, code);
     }
+    
+    // =====================line queries /todo====================
+    @Test
+    void test_todo_query() throws JSONException {
+        String title = "scan%20paperwork";
+        int code = Client.getResponseCode("GET", Const.BASE_URL, "todos?title="+title, "");
+        assertEquals(200, code);
+    }
+
+    // =====================line queries /projects====================
+    @Test
+    void test_project_query() throws JSONException {
+        String title = "Office%20Work";
+        int code = Client.getResponseCode("GET", Const.BASE_URL, "projects?title="+title, "");
+        assertEquals(200, code);
+    }
+
+    // =====================line queries /categories====================
+    @Test
+    void test_category_query() throws JSONException {
+        String title = "Home";
+        int code = Client.getResponseCode("GET", Const.BASE_URL, "categories?title=" + title, "");
+        assertEquals(200, code);
+    }
 }
