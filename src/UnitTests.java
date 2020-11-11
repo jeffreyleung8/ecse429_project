@@ -5,7 +5,9 @@ import org.junit.jupiter.api.*;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
+import org.junit.jupiter.api.TestMethodOrder;
+ 
+@TestMethodOrder(MethodOrderer.Random.class)
 class UnitTests {
 	@BeforeAll
 	static void setUpBeforeClass() throws Exception {
@@ -17,7 +19,6 @@ class UnitTests {
 			Runtime rt = Runtime.getRuntime();
 			rt.exec(Const.COMMAND);
 		}
-		
 	}
 
 	@AfterAll
@@ -251,8 +252,17 @@ class UnitTests {
 	// =====================/categories====================
 	@Test
 	void testGetCategories() throws JSONException {
-		JSONObject obj = Client.sendRequest("GET", Const.BASE_URL, "categories", "");
-		assertEquals(2, obj.getJSONArray("categories").length());
+		JSONObject obj_1 = Client.sendRequest("POST", Const.BASE_URL, "categories", Const.CATEGORY_PARAM3);
+		assertEquals(Const.CATEGORY_TITLE_3, obj_1.getString("title"));
+		String target_id = (String) obj_1.get(Const.ID);
+
+		JSONObject obj_2 = Client.sendRequest("GET", Const.BASE_URL, "categories", "");
+		
+		if(obj_2.getJSONArray("categories").length() < 1) {
+			Assert.fail();
+		}
+		Client.sendRequest("DELETE", Const.BASE_URL, "categories/"+target_id, "");
+		
 	}
 
 	// =====================/categories/:id====================

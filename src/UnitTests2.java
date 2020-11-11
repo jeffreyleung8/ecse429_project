@@ -2,10 +2,10 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.Assert;
 import org.junit.jupiter.api.*;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+@TestMethodOrder(MethodOrderer.Random.class)
 class UnitTests2 {
     @BeforeAll
     static void setUpBeforeClass() throws Exception {
@@ -76,7 +76,7 @@ class UnitTests2 {
     }
 
     @Test
-    void test_delete_tood_invalid_id_return_code() throws JSONException {
+    void test_delete_todo_invalid_id_return_code() throws JSONException {
         String id = "-1";
         int code = Client.getResponseCode("DELETE", Const.BASE_URL, "todos/"+id, "");
         assertEquals(404, code);
