@@ -15,6 +15,7 @@ Feature: Query all the tasks under a priority
 
   Scenario Outline: student adds priority HIGH to a incomplete task and retrieves it (Normal Flow)
     Given the todo <title> exists in the system
+    And the todo <title> is marked incomplete
     And the category <priority> exists in the system
     When categorize todo <title> as category <priority>
     Then the todo <title> with status incomplete should be under the category <priority>
@@ -23,7 +24,7 @@ Feature: Query all the tasks under a priority
       | test1 | HIGH       |
       | test2 | HIGH       |
 
-  Scenario Outline: student adds incomplete task to priority HIGH and retrieves it (Alt flow)
+  Scenario Outline: student adds incomplete task to priority HIGH and retrieves it (Normal flow)
     Given the todo <title> exists in the system
     And the todo <title> is marked incomplete
     And the category <priority> exists in the system
