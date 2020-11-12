@@ -1,6 +1,6 @@
 import static org.junit.jupiter.api.Assertions.*;
 
-import org.junit.Assert;
+import junit.framework.Assert;
 import org.junit.jupiter.api.*;
 import org.json.JSONArray;
 import org.json.JSONException;
