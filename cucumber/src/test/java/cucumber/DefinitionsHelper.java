@@ -10,7 +10,7 @@ public class DefinitionsHelper {
 
     public static String getTodoId(String t){
         try {
-            JSONObject obj = Client.sendRequest("GET", BASE_URL, "todos?title" + t, "");
+            JSONObject obj = Client.sendRequest("GET", BASE_URL, "todos?title=" + t, "");
             JSONArray todos = obj.getJSONArray("todos");
 
             if (todos.length() > 0) {

@@ -16,14 +16,15 @@ Feature: Categorize task priority
     When categorize todo "test1" as category "HIGH"
     Then the category of the todo "test1" should be "HIGH"
 
-  Scenario: student changes the priority of a task from LOW to HIGH (Alt flow)
+  Scenario: student creates multiple todos with LOW priority (Alt flow)
     Given the following todos are created in the system:
       | title | doneStatus  | description |
+      | test1 | false       | test1       |
       | test2 | false       | test2       |
+    When categorize todo "test1" as category "LOW"
     And categorize todo "test2" as category "LOW"
-    When remove category "LOW" from todo "test2"
-    And categorize todo "test2" as category "HIGH"
-    Then the category of the todo "test2" should be "HIGH"
+    Then the category of the todo "test1" should be "LOW"
+    And the category of the todo "test2" should be "LOW"
 
   Scenario: student changes the priority of a task to an non existing priority (Error flow)
     Given the following todos are created in the system:

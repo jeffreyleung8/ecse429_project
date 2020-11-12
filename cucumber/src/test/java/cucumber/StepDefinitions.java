@@ -81,6 +81,15 @@ public class StepDefinitions {
                     body);
         }
     }
+    @Given("remove the todo {string}")
+    public void remove_the_todo(String todo) {
+        String todo_id = DefinitionsHelper.getTodoId(todo);
+        JSONObject obj = Client.sendRequest("DELETE",
+                DefinitionsHelper.BASE_URL,
+                "todos/" + todo_id,
+                "");
+    }
+
     //========================== when ==========================
     @When("remove category {string} from todo {string}")
     public void remove_category_from_todo(String category, String todo) {
@@ -102,6 +111,7 @@ public class StepDefinitions {
                 "todos/" + todo_id + "/categories",
                 body);
     }
+
     //========================== then ==========================
     @Then("the category of the todo {string} should be {string}")
     public void the_category_of_the_todo_should_be(String todo, String category) throws JSONException {
