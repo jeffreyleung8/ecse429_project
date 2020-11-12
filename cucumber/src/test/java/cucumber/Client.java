@@ -103,7 +103,7 @@ public class Client {
                 writer.write(body);
                 writer.close();
             }
-
+            returnCode = connection.getResponseCode() + "";
             System.out.println("Response Code: "+ connection.getResponseCode() + " "
                     + connection.getResponseMessage());
 
