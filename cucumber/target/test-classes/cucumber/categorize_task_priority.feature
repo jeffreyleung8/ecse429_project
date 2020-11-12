@@ -4,31 +4,63 @@ Feature: Categorize task priority
   Background:
     Given system is ready
     And the following categories are created in the system:
-      | title   | description     |
+      | title   | description       |
       | HIGH    | "high priority"   |
       | MEDIUM  | "medium priority" |
       | LOW     | "low priority"    |
-
-  Scenario: student creates a todo with HIGH priority (Normal Flow)
-    Given the following todos are created in the system:
-      | title | doneStatus  | description |
-      | test1 | false       | test1       |
-    When categorize todo "test1" as category "HIGH"
-    Then the category of the todo "test1" should be "HIGH"
-
-  Scenario: student creates multiple todos with LOW priority (Alt flow)
-    Given the following todos are created in the system:
+    And the following todos are created in the system:
       | title | doneStatus  | description |
       | test1 | false       | test1       |
       | test2 | false       | test2       |
-    When categorize todo "test1" as category "LOW"
-    And categorize todo "test2" as category "LOW"
-    Then the category of the todo "test1" should be "LOW"
-    And the category of the todo "test2" should be "LOW"
-
-  Scenario: student changes the priority of a task to an non existing priority (Error flow)
-    Given the following todos are created in the system:
-      | title | doneStatus  | description |
       | test3 | false       | test3       |
-    When categorize todo "test2" as category "NONE"
-    Then the return code should be "404"
+
+  Scenario Outline: student creates a todo with priority (Normal Flow)
+    Given the todo <title> exists in the system
+    And the category <priority> exists in the system
+    When categorize todo <title> as category <priority>
+    Then the category of the todo <title> should be <priority>
+    Examples:
+      | title | priority |
+      | test1 | LOW      |
+      | test2 | MEDIUM   |
+      | test3 | HIGH     |
+
+  Scenario Outline: student creates multiple todos with the same priority (Alt flow)
+    Given the todo <title1> exists in the system
+    And the todo <title2> exists in the system
+    And the category <priority> exists in the system
+    When categorize todo <title1> as category <priority>
+    And categorize todo <title2> as category <priority>
+    Then the category of the todo <title1> should be <priority>
+    And the category of the todo <title2> should be <priority>
+    Examples:
+      | title1 | title2 | priority |
+      | test1  | test2  | LOW      |
+      | test2  | test3  | MEDIUM   |
+      | test3  | test1  | HIGH     |
+
+  Scenario Outline: student creates multiple todos with different priority (Alt flow)
+    Given the todo <title1> exists in the system
+    And the todo <title2> exists in the system
+    And the category <priority1> exists in the system
+    And the category <priority2> exists in the system
+    When categorize todo <title1> as category <priority1>
+    And categorize todo <title2> as category <priority2>
+    Then the category of the todo <title1> should be <priority1>
+    And the category of the todo <title2> should be <priority2>
+    Examples:
+      | title1 | title2 | priority1 | priority2 |
+      | test1  | test2  | LOW       | MEDIUM    |
+      | test2  | test3  | MEDIUM    | HIGH      |
+      | test3  | test1  | HIGH      | LOW       |
+
+  Scenario Outline: student changes the priority of a task to an non existing priority (Error flow)
+    Given the todo <title> exists in the system
+    And the category <priority> does not exist in the system
+    When categorize todo <title> as category <priority>
+    Then the return code should be 404
+    Examples:
+      | title | priority |
+      | test1 | NONE     |
+      | test2 | NO       |
+      | test3 | YES      |

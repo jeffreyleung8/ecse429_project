@@ -49,33 +49,6 @@ public class Client {
         }
     }
 
-    public static int getResponseCode(String requestType, String baseUrl, String path, String body) {
-        try {
-            URL url = new URL(baseUrl + path);
-            System.out.println("Sending: " + requestType + " " + url.toString());
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-
-            connection.setDoInput(true);
-            connection.setDoOutput(true);
-
-            connection.setRequestMethod(requestType);
-            connection.setRequestProperty("Accept", "application/json");
-            connection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
-
-            if(body != "") {
-                OutputStreamWriter writer = new OutputStreamWriter(connection.getOutputStream(), "UTF-8");
-                writer.write(body);
-                writer.close();
-            }
-
-            connection.disconnect();
-            return connection.getResponseCode();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return 0;
-    }
-
     public static JSONObject sendRequest(String requestType, String baseUrl, String path, String body) {
         try {
             URL url = new URL(baseUrl + path);

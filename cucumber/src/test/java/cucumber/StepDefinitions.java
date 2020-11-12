@@ -48,7 +48,6 @@ public class StepDefinitions {
             Assert.fail();
         }
     }
-
     @Given("the following categories are created in the system:")
     public void the_following_categories_are_created_in_the_system(DataTable dataTable) throws JSONException {
         List<Map<String, String>> categories = dataTable.asMaps(String.class, String.class);
@@ -81,17 +80,39 @@ public class StepDefinitions {
                     body);
         }
     }
-    @Given("remove the todo {string}")
-    public void remove_the_todo(String todo) {
-        String todo_id = DefinitionsHelper.getTodoId(todo);
-        JSONObject obj = Client.sendRequest("DELETE",
+    @Given("^the todo (.*) exists in the system$")
+    public void the_todo_exists_in_the_system(String t) {
+        assertNotNull(DefinitionsHelper.getTodoId(t));
+    }
+    @Given("^the todo (.*) does not exist in the system$")
+    public void the_todo_does_not_exists_in_the_system(String t) {
+        assertNull(DefinitionsHelper.getTodoId(t));
+    }
+    @Given("^the category (.*) exists in the system$")
+    public void the_category_exists_in_the_system(String c) {
+        assertNotNull(DefinitionsHelper.getCategoryId(c));
+    }
+    @Given("^the category (.*) does not exist in the system$")
+    public void the_category_does_not_exist_in_the_system(String c) {
+        assertNull(DefinitionsHelper.getCategoryId(c));
+    }
+    @Given("^the todo (.*) is marked (.*)$")
+    public void the_todo_is_marked(String todo, String status) throws JSONException {
+        JSONObject obj = Client.sendRequest("GET",
                 DefinitionsHelper.BASE_URL,
-                "todos/" + todo_id,
+                "todos?title=" + todo,
                 "");
+        boolean completed = false;
+        if(status.equals("completed")) completed = true;
+        JSONArray todos = obj.getJSONArray("todos");
+        if(todos.length() > 1){
+            assertEquals(Boolean.toString(completed), todos.getJSONObject(0).get("doneStatus"));
+        }
+
     }
 
     //========================== when ==========================
-    @When("remove category {string} from todo {string}")
+    @When("^remove category (.*) from todo (.*)$")
     public void remove_category_from_todo(String category, String todo) {
         String todo_id = DefinitionsHelper.getTodoId(todo);
         String category_id = DefinitionsHelper.getCategoryId(category);
@@ -100,8 +121,15 @@ public class StepDefinitions {
                 "todos/" + todo_id + "/categories/" +category_id,
                 "");
     }
-
-    @When("categorize todo {string} as category {string}")
+    @When("^remove the todo (.*) from the system$")
+    public void remove_the_todo_from_the_system(String todo) {
+        String todo_id = DefinitionsHelper.getTodoId(todo);
+        JSONObject obj = Client.sendRequest("DELETE",
+                DefinitionsHelper.BASE_URL,
+                "todos/" + todo_id,
+                "");
+    }
+    @When("^categorize todo (.*) as category (.*)$")
     public void categorize_as(String todo, String category) {
         String todo_id = DefinitionsHelper.getTodoId(todo);
         String category_id = DefinitionsHelper.getCategoryId(category);
@@ -111,9 +139,30 @@ public class StepDefinitions {
                 "todos/" + todo_id + "/categories",
                 body);
     }
+    @When("^add the todo (.*) to the category (.*)$")
+    public void add_the_todo_to_the_category(String todo, String category) {
+        String todo_id = DefinitionsHelper.getTodoId(todo);
+        String category_id = DefinitionsHelper.getCategoryId(category);
+        String body = "{ id :" + "\"" + todo_id +"\" }";
+        JSONObject obj = Client.sendRequest("POST",
+                DefinitionsHelper.BASE_URL,
+                "categories/" + category_id + "/todos",
+                body);
+    }
+    @When("^marking the todo (.*) as (.*)$")
+    public void marking_the_todo_as_(String todo, String status) {
+        String todo_id = DefinitionsHelper.getTodoId(todo);
+        boolean completed = false;
+        if(status.equals("completed")) completed = true;
+        String body = "{ doneStatus :" + completed + "}";
+        JSONObject obj = Client.sendRequest("POST",
+                DefinitionsHelper.BASE_URL,
+                "todos/" + todo_id,
+                body);
+    }
 
     //========================== then ==========================
-    @Then("the category of the todo {string} should be {string}")
+    @Then("^the category of the todo (.*) should be (.*)$")
     public void the_category_of_the_todo_should_be(String todo, String category) throws JSONException {
         boolean sameId = false;
         String todo_id = DefinitionsHelper.getTodoId(todo);
@@ -131,8 +180,69 @@ public class StepDefinitions {
         }
         assertEquals(true, sameId);
     }
-
-    @Then("the return code should be {string}")
+    @Then("^the todo (.*) with status (.*) should be under the category (.*)$")
+    public void the_todo_should_be_under_the_category(String todo, String status, String category) throws JSONException {
+        boolean sameId = false;
+        String cat_id = DefinitionsHelper.getCategoryId(category);
+        JSONObject obj;
+        switch(status){
+            case "incomplete":
+                obj = Client.sendRequest("GET",
+                        DefinitionsHelper.BASE_URL,
+                        "categories/" + cat_id + "/todos?doneStatus=false",
+                        "");
+                break;
+            case "completed":
+                obj = Client.sendRequest("GET",
+                        DefinitionsHelper.BASE_URL,
+                        "categories/" + cat_id + "/todos?doneStatus=true",
+                        "");
+                break;
+            default:
+                obj = Client.sendRequest("GET",
+                        DefinitionsHelper.BASE_URL,
+                        "categories/" + cat_id + "/todos",
+                        "");
+                break;
+        }
+        JSONArray todos = obj.getJSONArray("todos");
+        for(int i = 0; i < todos.length(); i++){
+            JSONObject c = todos.getJSONObject(i);
+            if(c.get("title").equals(todo)) {
+                sameId = true;
+                break;
+            }
+        }
+        assertEquals(true, sameId);
+    }
+    @Then("^the list of todos with status (.*) under the category (.*) should be empty$")
+    public void the_list_of_todos_under_the_category_should_be_empty(String status, String category) throws JSONException {
+        String cat_id = DefinitionsHelper.getCategoryId(category);
+        JSONObject obj;
+        switch(status){
+            case "incomplete":
+                obj = Client.sendRequest("GET",
+                        DefinitionsHelper.BASE_URL,
+                        "categories/" + cat_id + "/todos?doneStatus=false",
+                        "");
+                break;
+            case "completed":
+                obj = Client.sendRequest("GET",
+                        DefinitionsHelper.BASE_URL,
+                        "categories/" + cat_id + "/todos?doneStatus=true",
+                        "");
+                break;
+            default:
+                obj = Client.sendRequest("GET",
+                        DefinitionsHelper.BASE_URL,
+                        "categories/" + cat_id + "/todos",
+                        "");
+                break;
+        }
+        JSONArray todos = obj.getJSONArray("todos");
+        assertEquals(0, todos.length());
+    }
+    @Then("^the return code should be (.*)$")
     public void the_return_code_should_be(String code) {
         assertEquals(code, Client.returnCode);
     }
