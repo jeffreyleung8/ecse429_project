@@ -58,7 +58,7 @@ Feature: Categorize task priority
     Given the todo <title> exists in the system
     And the category <priority> does not exist in the system
     When categorize todo <title> as category <priority>
-    Then the return code should be 404
+    Then an error not found message should be displayed
     Examples:
       | title | priority |
       | test1 | NONE     |

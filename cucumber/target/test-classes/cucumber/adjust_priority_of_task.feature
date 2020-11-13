@@ -42,21 +42,21 @@ Feature: Adjust task priority
       | test2 |
       | test3 |
 
-  Scenario Outline: student changes the priority of a non existing todo (Error flow)
+  Scenario Outline: student changes the priority of a removed todo (Error flow)
     Given the todo <title> exists in the system
     When remove the todo <title> from the system
     And categorize todo <title> as category HIGH
-    Then the return code should be 404
+    Then an error not found message should be displayed
     Examples:
       | title |
       | test1 |
       | test2 |
       | test3 |
 
-  Scenario Outline: student changes the priority of a removed todo (Error flow)
+  Scenario Outline: student changes the priority of a non existing todo (Error flow)
     Given the todo <title> does not exist in the system
     And categorize todo <title> as category HIGH
-    Then the return code should be 404
+    Then an error not found message should be displayed
     Examples:
       | title |
       | test5 |

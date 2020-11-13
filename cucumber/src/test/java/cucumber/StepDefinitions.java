@@ -242,9 +242,9 @@ public class StepDefinitions {
         JSONArray todos = obj.getJSONArray("todos");
         assertEquals(0, todos.length());
     }
-    @Then("^the return code should be (.*)$")
-    public void the_return_code_should_be(String code) {
-        assertEquals(code, Client.returnCode);
+    @Then("an error not found message should be displayed")
+    public void an_error_not_found_message_should_be_displayed() {
+        assertEquals("404", Client.returnCode);
     }
 
 }

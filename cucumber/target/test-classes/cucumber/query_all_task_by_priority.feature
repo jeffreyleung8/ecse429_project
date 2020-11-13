@@ -68,7 +68,7 @@ Feature: Query all the tasks under a priority
   Scenario Outline: student adds a non exiting task to HIGH and retrieves it (Error flow)
     Given the todo <title> does not exist in the system
     When categorize todo <title> as category HIGH
-    Then the return code should be 404
+    Then an error not found message should be displayed
     Examples:
       | title   |
       | test10  |
