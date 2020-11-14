@@ -80,6 +80,27 @@ public class StepDefinitions {
                     body);
         }
     }
+    
+    @Given("the following projects are created in the system:")
+    public void the_following_projects_are_created_in_the_system(DataTable dataTable) throws JSONException {
+        List<Map<String, String>> projects = dataTable.asMaps(String.class, String.class);
+
+        for (Map<String, String> project : projects) {
+            String title = project.get("title");
+            String completed = project.get("completed");
+            String active = project.get("active");
+            String description = project.get("description");
+            String body = "{ title :" + title + ", "
+                    + "completed :" + completed + ", "
+                    + "active : " + active + ", "
+                    + "description : " + description + "}";
+            JSONObject obj = Client.sendRequest("POST",
+                    DefinitionsHelper.BASE_URL,
+                    "projects",
+                    body);
+        }
+    }
+    
     @Given("^the todo (.*) exists in the system$")
     public void the_todo_exists_in_the_system(String t) {
         assertNotNull(DefinitionsHelper.getTodoId(t));
@@ -88,6 +109,7 @@ public class StepDefinitions {
     public void the_todo_does_not_exists_in_the_system(String t) {
         assertNull(DefinitionsHelper.getTodoId(t));
     }
+    
     @Given("^the category (.*) exists in the system$")
     public void the_category_exists_in_the_system(String c) {
         assertNotNull(DefinitionsHelper.getCategoryId(c));
@@ -162,6 +184,18 @@ public class StepDefinitions {
     }
 
     //========================== then ==========================
+    
+    @Then("^the todo (.*) should be marked completed in the system$")
+    public void the_todo_should_be(String todo) throws JSONException {
+    	boolean completed = false;
+    	String todo_id = DefinitionsHelper.getTodoId(todo);
+    	JSONObject obj = Client.sendRequest("GET", DefinitionsHelper.BASE_URL, "todos/" + todo_id, "");
+    	if (obj.get("doneStatus").equals("true")) {
+    		completed = true;
+    	}
+    	assertEquals(true, completed);
+    }
+    
     @Then("^the category of the todo (.*) should be (.*)$")
     public void the_category_of_the_todo_should_be(String todo, String category) throws JSONException {
         boolean sameId = false;
@@ -242,6 +276,7 @@ public class StepDefinitions {
         JSONArray todos = obj.getJSONArray("todos");
         assertEquals(0, todos.length());
     }
+    
     @Then("an error not found message should be displayed")
     public void an_error_not_found_message_should_be_displayed() {
         assertEquals("404", Client.returnCode);
