@@ -21,6 +21,20 @@ public class DefinitionsHelper {
         }
         return null;
     }
+    
+    public static String getProjectId(String p){
+        try {
+            JSONObject obj = Client.sendRequest("GET", BASE_URL, "projects?title=" + p, "");
+            JSONArray projects = obj.getJSONArray("projects");
+
+            if (projects.length() > 0) {
+                return (String) projects.getJSONObject(0).get("id");
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 
     public static String getCategoryId(String t){
         try {

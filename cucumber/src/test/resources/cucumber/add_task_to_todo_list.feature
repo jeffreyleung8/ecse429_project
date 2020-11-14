@@ -4,37 +4,47 @@ Feature: Add task to course to do list
   Background: 
     Given system is ready
     And the following projects are created in the system:
-    	| title | completed   | active	 | description |
-      | proj1 | false       | true     | desc1       |
-      | proj2 | false       | false    | desc2       |
-      | proj3 | true        | false    | desc3       |
-      | proj4 | true        | false    | desc4       |
+    	| title   | completed   | active	 | description |
+      | course1 | false       | true     | desc1       |
+      | course2 | false       | false    | desc2       |
+      | course3 | true        | false    | desc3       |
+      | course4 | true        | false    | desc4       |
+    And the following todos are created in the system:
+      | title   | doneStatus  | description |
+      | todo1   | false       | test1       |
+      | todo2   | false       | test2       |
+      | todo3   | false       | test3       |
+      | todo4   | false       | test3       |
 	
-  Scenario Outline: Mark task that is not completed as done (Normal Flow)
+  Scenario Outline: Add a todo to a course todo list (Normal Flow)
     Given the todo <title> exists in the system
-    And the todo <title> is marked incomplete
-    When marking the todo <title> as completed
-    Then the todo <title> should be marked completed in the system
+    And the project <project> exists in the system
+    When adding the todo <title> to the project <project> to do list
+    Then the todo <title> should be part of the project <project> to do list in the system 
 
     Examples: 
-      | title | doneStatus  | 
-      | task1 | true        | 
-      | task2 | true        |     
+      | project   | title     | 
+      | course1   | todo1     | 
+      | course2   | todo2     |     
       
-  Scenario Outline: Mark task that is completed as done (Alt Flow)
-    Given the todo <title> exists in the system
-    And the todo <title> is marked completed
-    When marking the todo <title> as completed
-    Then the todo <title> should be marked completed in the system
+  Scenario Outline: Add multiple todos to the same course todo list (Alt Flow)
+    Given the todo <title1> exists in the system
+    And the todo <title2> exists in the system
+    And the project <project> exists in the system
+    When adding the todo <title1> to the project <project> to do list
+    And adding the todo <title2> to the project <project> to do list
+    Then the todo <title1> should be part of the project <project> to do list in the system 
+    And the todo <title2> should be part of the project <project> to do list in the system
 
     Examples: 
-      | title | doneStatus  | 
-      | task3 | true        | 
-      | task4 | true        | 
+      | project   | title1    | title2    |
+      | course1   | todo1     | todo2     |
+      | course2   | todo3     | todo4     |
       
-  Scenario Outline: Mark non-existent task as done (Error Flow)
-    Given the todo <title> does not exist in the system
-    When marking the todo <title> as completed
+  Scenario Outline: Add a todo to a non-existent course todo list (Error Flow)
+    Given the todo <title> exists in the system
+    And the project <project> does not exist in the system 
+    When adding the todo <title> to the project <project> to do list
     Then an error not found message should be displayed
 
     Examples: 

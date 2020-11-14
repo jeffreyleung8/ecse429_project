@@ -109,7 +109,14 @@ public class StepDefinitions {
     public void the_todo_does_not_exists_in_the_system(String t) {
         assertNull(DefinitionsHelper.getTodoId(t));
     }
-    
+    @Given("^the project (.*) exists in the system$")
+    public void the_project_exists_in_the_system(String p) {
+        assertNotNull(DefinitionsHelper.getProjectId(p));
+    }
+    @Given("^the project (.*) does not exist in the system$")
+    public void the_project_does_not_exist_in_the_system(String p) {
+        assertNull(DefinitionsHelper.getProjectId(p));
+    }
     @Given("^the category (.*) exists in the system$")
     public void the_category_exists_in_the_system(String c) {
         assertNotNull(DefinitionsHelper.getCategoryId(c));
@@ -182,11 +189,24 @@ public class StepDefinitions {
                 "todos/" + todo_id,
                 body);
     }
+    
+    @When("^adding the todo (.*) to the project (.*) to do list$")
+    public void adding_the_todo_to(String todo, String project) {
+        String todo_id = DefinitionsHelper.getTodoId(todo);
+        String proj_id = DefinitionsHelper.getProjectId(project);
+        
+        String body = "{ id :" + proj_id + "}";
+        JSONObject obj = Client.sendRequest("POST",
+                DefinitionsHelper.BASE_URL,
+                "todos/" + todo_id + "/tasksof",
+                body);
+    }
+    
 
     //========================== then ==========================
     
     @Then("^the todo (.*) should be marked completed in the system$")
-    public void the_todo_should_be(String todo) throws JSONException {
+    public void the_todo_should_be_marked(String todo) throws JSONException {
     	boolean completed = false;
     	String todo_id = DefinitionsHelper.getTodoId(todo);
     	JSONObject obj = Client.sendRequest("GET", DefinitionsHelper.BASE_URL, "todos/" + todo_id, "");
@@ -194,6 +214,23 @@ public class StepDefinitions {
     		completed = true;
     	}
     	assertEquals(true, completed);
+    }
+    
+    @Then("^the todo (.*) should be part of the project (.*) to do list in the system$")
+    public void the_todo_should_be_part_of(String todo, String project) throws JSONException {
+    	boolean partOf = false;
+    	String todo_id = DefinitionsHelper.getTodoId(todo);
+    	String proj_id = DefinitionsHelper.getProjectId(project);
+    	JSONObject obj = Client.sendRequest("GET", DefinitionsHelper.BASE_URL, "todos/" + todo_id, "");
+    	JSONArray tasksof = obj.getJSONArray("tasksof");
+        for(int i = 0; i < tasksof.length(); i++){
+            JSONObject t = tasksof.getJSONObject(i);
+            if(t.get("id").equals(proj_id)) {
+                partOf = true;
+                break;
+            }
+        }
+        assertEquals(true, partOf);
     }
     
     @Then("^the category of the todo (.*) should be (.*)$")
