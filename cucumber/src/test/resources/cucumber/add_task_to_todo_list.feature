@@ -48,6 +48,6 @@ Feature: Add task to course to do list
     Then an error not found message should be displayed
 
     Examples: 
-      | title  | 
-      | task10 | 
-      | task20 | 
+      | title  | project  |
+      | todo1  | course10 |
+      | todo2  | course20 |
