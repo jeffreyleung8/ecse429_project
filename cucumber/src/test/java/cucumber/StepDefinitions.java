@@ -139,6 +139,46 @@ public class StepDefinitions {
         }
 
     }
+    
+    @Given("^the following todos are tasks of {string}")
+    public void the_following_todos_are_tasks_of(String project, DataTable dataTable) {
+    	String proj_id = DefinitionsHelper.getProjectId(project);
+    	List<Map<String, String>> todos = dataTable.asMaps(String.class, String.class);
+        for (Map<String, String> todo : todos) {
+            String todo_id = DefinitionsHelper.getTodoId(todo.get("title"));
+            String body = "{ id :" + proj_id + "}";
+            JSONObject obj = Client.sendRequest("POST",
+                    DefinitionsHelper.BASE_URL,
+                    "todos/" + todo_id + "/tasksof",
+                    body);
+         }
+    }
+    
+    @Given("^{string} does not have any todos")
+    public void project_does_not_have_any_todos(String project) throws JSONException {
+    	JSONObject obj = Client.sendRequest("GET",
+                DefinitionsHelper.BASE_URL,
+                "projects?title=" + project, "");
+    	JSONArray todos = obj.getJSONArray("tasks");
+        assertEquals(0, todos.length());
+    }
+    
+    @Given("^the todo (.*) is a task of the project (.*)$")
+    public void the_todo_is_a_task_of(String todo, String project) throws JSONException {
+    	boolean partOf = false;
+    	String todo_id = DefinitionsHelper.getTodoId(todo);
+    	String proj_id = DefinitionsHelper.getProjectId(project);
+    	JSONObject obj = Client.sendRequest("GET", DefinitionsHelper.BASE_URL, "todos/" + todo_id, "");
+    	JSONArray tasksof = obj.getJSONArray("tasksof");
+        for(int i = 0; i < tasksof.length(); i++){
+            JSONObject t = tasksof.getJSONObject(i);
+            if(t.get("id").equals(proj_id)) {
+                partOf = true;
+                break;
+            }
+        }
+        assertEquals(true, partOf);
+    }
 
     //========================== when ==========================
     @When("^remove category (.*) from todo (.*)$")
@@ -202,6 +242,16 @@ public class StepDefinitions {
                 body);
     }
     
+    @When("^removing the todo (.*) from the project (.*) to do list$")
+    public void removing_the_todo_from(String todo, String project) {
+        String todo_id = DefinitionsHelper.getTodoId(todo);
+        String proj_id = DefinitionsHelper.getProjectId(project);
+        
+        JSONObject obj = Client.sendRequest("DELETE",
+                DefinitionsHelper.BASE_URL,
+                "todos/" + todo_id + "/tasksof/" + proj_id, "");
+    }
+    
 
     //========================== then ==========================
     
@@ -231,6 +281,23 @@ public class StepDefinitions {
             }
         }
         assertEquals(true, partOf);
+    }
+    
+    @Then("^the todo (.*) should not be part of the project (.*) to do list in the system$")
+    public void the_todo_should_not_be_part_of(String todo, String project) throws JSONException {
+    	boolean partOf = false;
+    	String todo_id = DefinitionsHelper.getTodoId(todo);
+    	String proj_id = DefinitionsHelper.getProjectId(project);
+    	JSONObject obj = Client.sendRequest("GET", DefinitionsHelper.BASE_URL, "todos/" + todo_id, "");
+    	JSONArray tasksof = obj.getJSONArray("tasksof");
+        for(int i = 0; i < tasksof.length(); i++){
+            JSONObject t = tasksof.getJSONObject(i);
+            if(t.get("id").equals(proj_id)) {
+            	partOf = true;
+                break;
+            }
+        }
+        assertEquals(false, partOf);
     }
     
     @Then("^the category of the todo (.*) should be (.*)$")
