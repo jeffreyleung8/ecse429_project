@@ -260,9 +260,14 @@ public class StepDefinitions {
     	boolean completed = false;
     	String todo_id = DefinitionsHelper.getTodoId(todo);
     	JSONObject obj = Client.sendRequest("GET", DefinitionsHelper.BASE_URL, "todos/" + todo_id, "");
-    	if (obj.get("doneStatus").equals("true")) {
-    		completed = true;
-    	}
+        JSONArray todos = obj.getJSONArray("todos");
+        for(int i = 0; i < todos.length(); i++){
+            JSONObject t = todos.getJSONObject(i);
+            if(t.get("doneStatus").equals("true")) {
+                completed = true;
+                break;
+            }
+        }
     	assertEquals(true, completed);
     }
     
