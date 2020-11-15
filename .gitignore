@@ -26,9 +26,3 @@ src/.DS_Store
 src/.idea/
 src/ecse429_project.iml
 src/out/
-
-.idea/**
-cucumber/.**
-.classpath
-.project
-.vs

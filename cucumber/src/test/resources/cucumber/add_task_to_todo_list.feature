@@ -45,7 +45,7 @@ Feature: Add task to course to do list
     Given the todo <title> exists in the system
     And the project <project> does not exist in the system 
     When adding the todo <title> to the project <project> to do list
-    Then a bad request message should be displayed
+    Then an error not found message should be displayed
 
     Examples: 
       | title  | project  |
