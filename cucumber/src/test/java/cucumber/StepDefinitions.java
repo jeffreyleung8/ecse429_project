@@ -375,9 +375,14 @@ public class StepDefinitions {
     	boolean completed = false;
     	String todo_id = DefinitionsHelper.getTodoId(todo);
     	JSONObject obj = Client.sendRequest("GET", DefinitionsHelper.BASE_URL, "todos/" + todo_id, "");
-    	if (obj.get("doneStatus").equals("true")) {
-    		completed = true;
-    	}
+        JSONArray todos = obj.getJSONArray("todos");
+        for(int i = 0; i < todos.length(); i++){
+            JSONObject t = todos.getJSONObject(i);
+            if(t.get("doneStatus").equals("true")) {
+                completed = true;
+                break;
+            }
+        }
     	assertEquals(true, completed);
     }
     
@@ -386,11 +391,11 @@ public class StepDefinitions {
     	boolean partOf = false;
     	String todo_id = DefinitionsHelper.getTodoId(todo);
     	String proj_id = DefinitionsHelper.getProjectId(project);
-    	JSONObject obj = Client.sendRequest("GET", DefinitionsHelper.BASE_URL, "todos/" + todo_id, "");
-    	JSONArray tasksof = obj.getJSONArray("tasksof");
-        for(int i = 0; i < tasksof.length(); i++){
-            JSONObject t = tasksof.getJSONObject(i);
-            if(t.get("id").equals(proj_id)) {
+    	JSONObject obj = Client.sendRequest("GET", DefinitionsHelper.BASE_URL, "todos/" + todo_id + "/tasksof", "");
+    	JSONArray projects = obj.getJSONArray("projects");
+        for(int i = 0; i < projects.length(); i++){
+            JSONObject p = projects.getJSONObject(i);
+            if(p.get("id").equals(proj_id)) {
                 partOf = true;
                 break;
             }
@@ -403,12 +408,12 @@ public class StepDefinitions {
     	boolean partOf = false;
     	String todo_id = DefinitionsHelper.getTodoId(todo);
     	String proj_id = DefinitionsHelper.getProjectId(project);
-    	JSONObject obj = Client.sendRequest("GET", DefinitionsHelper.BASE_URL, "todos/" + todo_id, "");
-    	JSONArray tasksof = obj.getJSONArray("tasksof");
-        for(int i = 0; i < tasksof.length(); i++){
-            JSONObject t = tasksof.getJSONObject(i);
-            if(t.get("id").equals(proj_id)) {
-            	partOf = true;
+        JSONObject obj = Client.sendRequest("GET", DefinitionsHelper.BASE_URL, "todos/" + todo_id + "/tasksof", "");
+        JSONArray projects = obj.getJSONArray("projects");
+        for(int i = 0; i < projects.length(); i++){
+            JSONObject p = projects.getJSONObject(i);
+            if(p.get("id").equals(proj_id)) {
+                partOf = true;
                 break;
             }
         }
@@ -559,6 +564,11 @@ public class StepDefinitions {
     @Then("an error not found message should be displayed")
     public void an_error_not_found_message_should_be_displayed() {
         assertEquals("404", Client.returnCode);
+    }
+
+    @Then("a bad request message should be displayed")
+    public void a_bad_request_message_should_be_displayed() {
+        assertEquals("400", Client.returnCode);
     }
 
 }
