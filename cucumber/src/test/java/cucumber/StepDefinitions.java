@@ -211,7 +211,7 @@ public class StepDefinitions {
     }
 
     @Given("^the following todos are associated to course {string}")
-    public void the_following_todos_are_tasks_of(String course, DataTable dataTable) {
+    public void the_following_todos_are_associated_class(String course, DataTable dataTable) {
         String course_id = DefinitionsHelper.getProjectId(course);
         List<Map<String, String>> todos = dataTable.asMaps(String.class, String.class);
         for (Map<String, String> todo : todos) {
@@ -233,7 +233,7 @@ public class StepDefinitions {
         JSONArray todos = obj.getJSONArray("tasks");
         for(int i = 0; i < todos.length(); i++){
             JSONObject t = todos.getJSONObject(i);
-            if(t.get("id").equals(proj_id)) {
+            if(t.get("id").equals(todo_id)) {
                 partOf = true;
                 break;
             }
@@ -243,7 +243,7 @@ public class StepDefinitions {
 
     @Given("^the class (.*) has (.*) todo lists$")
     public void number_todos_for_class(String course, String n) throws JSONException {
-        int numberOfCourses = (int) n;
+        int numberOfCourses = Integer.parseInt(n);
         String course_id = DefinitionsHelper.getProjectId(course);
         JSONObject obj = Client.sendRequest("GET", DefinitionsHelper.BASE_URL, "projects/" + course_id, "");
         JSONArray todos = obj.getJSONArray("tasks");
@@ -256,12 +256,12 @@ public class StepDefinitions {
     }
 
     @Given("^(.*) is the done status of the new todo$")
-    public void is_the_title_of_new_todo(String doneStatus) throws JSONException {
+    public void is_the_status_of_new_todo(String doneStatus) throws JSONException {
         this.todo_body.put("doneStatus",doneStatus);
     }
 
     @Given("^(.*) is the description of the new todo$")
-    public void is_the_title_of_new_todo(String description) throws JSONException {
+    public void is_the_description_of_new_todo(String description) throws JSONException {
         this.todo_body.put("description",description);
     }
 
@@ -359,8 +359,8 @@ public class StepDefinitions {
     @When("a student requests to remove all (.*) todo lists for this class (.*)$")
     public void remove_all_todos_of_class(String n, String course) throws JSONException{
         String course_id = DefinitionsHelper.getProjectId(course);
-        int numTodos = (int)n;
-        for(int i = 1; i <= numTodos; n++){
+        int numTodos = Integer.parseInt(n);
+        for(int i = 1; i <= numTodos; i++){
             JSONObject obj = Client.sendRequest("DELETE",
                     DefinitionsHelper.BASE_URL,
                     "projects/" + course_id + "/tasks/" + i, "");
@@ -502,28 +502,28 @@ public class StepDefinitions {
         // Assert the previous post call was successful
         assertEquals("201", Client.returnCode);
 
-        String todo_id = DefinitionsHelper.getTodoId(todo);
-        assertNull(todo_id)
+        String todo_id = DefinitionsHelper.getTodoId(title);
+        assertNull(todo_id);
     }
 
     @Then("a new todo instance with title (.*), status (.*) and description (.*) should be created")
-    public void todo_instance_title_status_description_created(String title, String status, String description){
+    public void todo_instance_title_status_description_created(String title, String status, String description) throws JSONException {
         // Assert the previous post call was successful
         assertEquals("201", Client.returnCode);
 
-        String todo_id = DefinitionsHelper.getTodoId(todo);
-        assertNull(todo_id)
+        String todo_id = DefinitionsHelper.getTodoId(title);
+        assertNull(todo_id);
         JSONObject obj = Client.sendRequest("GET", DefinitionsHelper.BASE_URL, "tasks/" + todo_id, "");
         assertTrue(obj.get("doneStatus").equals(status));
         assertTrue(obj.get("description").equals(description));
     }
 
     @Then("the todo list (.*)) should not be part of the class (.*)) in the system")
-    public void todo_removed_for_class(String todo, String course){
+    public void todo_removed_for_class(String todo, String course) throws JSONException {
         // Assert the previous post call was successful
         assertEquals("201", Client.returnCode);
 
-        boolean partOf = false
+        boolean partOf = false;
         String todo_id = DefinitionsHelper.getTodoId(todo);
         String course_id = DefinitionsHelper.getProjectId(course);
 
@@ -540,7 +540,7 @@ public class StepDefinitions {
     }
 
     @Then("all todo lists should be removed for the class (.*)) in the system")
-    public void all_todos_removed_for_class(String course){
+    public void all_todos_removed_for_class(String course) throws JSONException {
         // Assert the previous post call was successful
         assertEquals("201", Client.returnCode);
 
