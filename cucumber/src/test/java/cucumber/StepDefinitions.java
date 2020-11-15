@@ -170,7 +170,7 @@ public class StepDefinitions {
 
     }
     
-    @Given("^the following todos are tasks of {string}")
+    @Given("the following todos are tasks of {string}")
     public void the_following_todos_are_tasks_of(String project, DataTable dataTable) {
     	String proj_id = DefinitionsHelper.getProjectId(project);
     	List<Map<String, String>> todos = dataTable.asMaps(String.class, String.class);
@@ -184,7 +184,7 @@ public class StepDefinitions {
          }
     }
     
-    @Given("^{string} does not have any todos")
+    @Given("{string} does not have any todos")
     public void project_does_not_have_any_todos(String project) throws JSONException {
     	JSONObject obj = Client.sendRequest("GET",
                 DefinitionsHelper.BASE_URL,
