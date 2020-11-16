@@ -391,4 +391,9 @@ public class StepDefinitions {
         assertEquals("404", Client.returnCode);
     }
 
+    @Then("a bad request message should be displayed")
+    public void a_bad_request_message_should_be_displayed() {
+        assertEquals("400", Client.returnCode);
+    }
+
 }
