@@ -18,6 +18,8 @@ import static org.junit.Assert.*;
 
 public class StepDefinitions {
 
+    private JSONObject course_body;
+
     @Before
     public void initialization() throws Exception {
         Client.returnCode = "200";
@@ -47,6 +49,7 @@ public class StepDefinitions {
             System.out.println("Set-up\tError connecting to localhost:4567");
             Assert.fail();
         }
+        this.course_body = new JSONObject();
     }
     @Given("the following categories are created in the system:")
     public void the_following_categories_are_created_in_the_system(DataTable dataTable) throws JSONException {
@@ -100,7 +103,27 @@ public class StepDefinitions {
                     body);
         }
     }
-    
+
+    @Given("the following classes are created in the system:")
+    public void the_following_classes_are_created_in_the_system(DataTable dataTable) throws JSONException {
+        List<Map<String, String>> projects = dataTable.asMaps(String.class, String.class);
+
+        for (Map<String, String> project : projects) {
+            String title = project.get("title");
+            String completed = project.get("completed");
+            String active = project.get("active");
+            String description = project.get("description");
+            String body = "{ title :" + title + ", "
+                    + "completed :" + completed + ", "
+                    + "active : " + active + ", "
+                    + "description : " + description + "}";
+            JSONObject obj = Client.sendRequest("POST",
+                    DefinitionsHelper.BASE_URL,
+                    "projects",
+                    body);
+        }
+    }
+
     @Given("^the todo (.*) exists in the system$")
     public void the_todo_exists_in_the_system(String t) {
         assertNotNull(DefinitionsHelper.getTodoId(t));
@@ -116,6 +139,14 @@ public class StepDefinitions {
     @Given("^the project (.*) does not exist in the system$")
     public void the_project_does_not_exist_in_the_system(String p) {
         assertNull(DefinitionsHelper.getProjectId(p));
+    }
+    @Given("^the course with title (.*) exists in the system$")
+    public void the_course_exists_in_the_system(String c) {
+        assertNotNull(DefinitionsHelper.getProjectId(c));
+    }
+    @Given("^the course with title (.*) does not exist in the system$")
+    public void the_course_does_not_exist_in_the_system(String c) {
+        assertNull(DefinitionsHelper.getProjectId(c));
     }
     @Given("^the category (.*) exists in the system$")
     public void the_category_exists_in_the_system(String c) {
@@ -179,6 +210,65 @@ public class StepDefinitions {
             }
         }
         assertEquals(true, partOf);
+    }
+
+    @Given("^the following todos are associated to course (.*)")
+    public void the_following_todos_are_associated_class(String course, DataTable dataTable) {
+        String course_id = DefinitionsHelper.getProjectId(course);
+        List<Map<String, String>> todos = dataTable.asMaps(String.class, String.class);
+        for (Map<String, String> todo : todos) {
+            String todo_id = DefinitionsHelper.getTodoId(todo.get("title"));
+            String body = "{ id :" + "\"" + todo_id + "\"" + "}";
+            JSONObject obj = Client.sendRequest("POST",
+                    DefinitionsHelper.BASE_URL,
+                    "projects/" + course_id + "/tasks",
+                    body);
+        }
+    }
+
+    @Given("^the course with title (.*) has (.*) todos")
+    public void num_todos_for_class(String course, String n) throws JSONException {
+        int numTodos = Integer.parseInt(n);
+        String course_id = DefinitionsHelper.getProjectId(course);
+        JSONObject obj = Client.sendRequest("GET", DefinitionsHelper.BASE_URL, "projects/" + course_id +"/tasks", "");
+        JSONArray todos = obj.getJSONArray("todos");
+        assertEquals(numTodos, todos.length());
+    }
+
+    @Given("^the course with title (.*) has an empty todo list")
+    public void course_empty_todo_list(String course) throws JSONException {
+        String course_id = DefinitionsHelper.getProjectId(course);
+        JSONObject obj = Client.sendRequest("GET", DefinitionsHelper.BASE_URL, "projects/" + course_id +"/tasks", "");
+        JSONArray todos = obj.getJSONArray("todos");
+        assertEquals(0, todos.length());
+    }
+
+    @Given("^(.*) is the active status of the new course")
+    public void is_the_active_status_of_new_course(String active) throws JSONException {
+        if(active != null) {
+            if (active.toUpperCase().equals("TRUE") || active.toUpperCase().equals("FALSE")) {
+                this.course_body.put("active", Boolean.parseBoolean(active));
+                return;
+            }
+        }
+        this.course_body.put("active", active);
+
+    }
+
+    @Given("^(.*) is the completed status of the new course")
+    public void is_the_completed_status_of_new_course(String completed) throws JSONException {
+        if(completed != null) {
+            if (completed.toUpperCase().equals("TRUE") || completed.toUpperCase().equals("FALSE")) {
+                this.course_body.put("active", Boolean.parseBoolean(completed));
+            }
+        }
+
+        this.course_body.put("active", completed);
+    }
+
+    @Given("^(.*) is the description of the new course")
+    public void is_the_description_of_new_course(String description) throws JSONException {
+        this.course_body.put("description", description);
     }
 
     //========================== when ==========================
@@ -252,7 +342,23 @@ public class StepDefinitions {
                 DefinitionsHelper.BASE_URL,
                 "todos/" + todo_id + "/tasksof/" + proj_id, "");
     }
-    
+
+    @When("^a student requests to create a new course with title (.*)$")
+    public void create_new_course_with_title(String title) throws JSONException{
+        course_body.put("title",title);
+        JSONObject obj = Client.sendRequest("POST",
+                DefinitionsHelper.BASE_URL,
+                "projects",
+                course_body.toString());
+    }
+
+    @When("^a student requests to remove the course with title (.*)$")
+    public void remove_course_with_title(String title) throws JSONException{
+        String course_id = DefinitionsHelper.getProjectId(title);
+        JSONObject obj = Client.sendRequest("DELETE",
+                DefinitionsHelper.BASE_URL,
+                "projects/" + course_id, "");
+    }
 
     //========================== then ==========================
     
@@ -386,7 +492,60 @@ public class StepDefinitions {
         JSONArray todos = obj.getJSONArray("todos");
         assertEquals(0, todos.length());
     }
-    
+    @Then("^a new course instance with title (.*) should be created")
+    public void course_instance_title_created(String title){
+        // Assert the previous post call was successful
+        assertEquals("201", Client.returnCode);
+
+        String course_id = DefinitionsHelper.getProjectId(title);
+        assertNotNull(course_id);
+    }
+
+    @Then("^a new course instance with (.*), (.*), (.*) and (.*) should be created")
+    public void course_instance_title_status_description_created(String title, String active, String completed, String description) throws JSONException {
+        // Assert the previous post call was successful
+        assertEquals("201", Client.returnCode);
+
+        String course_id = DefinitionsHelper.getProjectId(title);
+        assertNotNull(course_id);
+        JSONObject obj = Client.sendRequest("GET", DefinitionsHelper.BASE_URL, "projects/" + course_id, "");
+        JSONArray projects = obj.getJSONArray("projects");
+        for(int i = 0; i < projects.length(); i++){
+            JSONObject o = (JSONObject) projects.get(i);
+            if (o.get("id").equals(course_id)){
+                assertEquals(active, o.get("active"));
+                assertEquals(completed, o.get("completed"));
+                assertEquals(description, o.get("description"));
+            }
+        }
+    }
+
+    @Then("^the course with title (.*) should be removed from the system")
+    public void check_course_removed(String title) throws JSONException {
+        // Assert the previous post call was successful
+        assertEquals("200", Client.returnCode);
+
+        boolean partOf = false;
+        String course_id = DefinitionsHelper.getProjectId(title);
+
+        JSONObject obj = Client.sendRequest("GET", DefinitionsHelper.BASE_URL, "projects", "");
+        JSONArray courses = obj.getJSONArray("projects");
+        for(int i = 0; i < courses.length(); i++){
+            JSONObject c = courses.getJSONObject(i);
+            if(c.get("id").equals(course_id)) {
+                partOf = true;
+                break;
+            }
+        }
+        assertEquals(false, partOf);
+    }
+
+    @Then("an error message \"Invalid active status\" should be displayed")
+    public void an_error_invalid_status_should_be_displayed(){ assertEquals("400", Client.returnCode);}
+
+    @Then("an error \"Course does not exist\" should be displayed")
+    public void an_error_course_dne_should_be_displayed(){ assertEquals("404", Client.returnCode);}
+
     @Then("an error not found message should be displayed")
     public void an_error_not_found_message_should_be_displayed() {
         assertEquals("404", Client.returnCode);
