@@ -102,7 +102,27 @@ public class StepDefinitions {
                     body);
         }
     }
-    
+
+    @Given("the following classes \\(projects) are created in the system:")
+    public void the_following_classes_are_created_in_the_system(DataTable dataTable) throws JSONException {
+        List<Map<String, String>> projects = dataTable.asMaps(String.class, String.class);
+
+        for (Map<String, String> project : projects) {
+            String title = project.get("title");
+            String completed = project.get("completed");
+            String active = project.get("active");
+            String description = project.get("description");
+            String body = "{ title :" + title + ", "
+                    + "completed :" + completed + ", "
+                    + "active : " + active + ", "
+                    + "description : " + description + "}";
+            JSONObject obj = Client.sendRequest("POST",
+                    DefinitionsHelper.BASE_URL,
+                    "projects",
+                    body);
+        }
+    }
+
     @Given("^the todo (.*) exists in the system$")
     public void the_todo_exists_in_the_system(String t) {
         assertNotNull(DefinitionsHelper.getTodoId(t));
@@ -318,7 +338,7 @@ public class StepDefinitions {
                 "todos/" + todo_id + "/tasksof/" + proj_id, "");
     }
 
-    @When("When a student sends a todo post request$")
+    @When("a student sends a todo post request$")
     public void create_new_todo() throws JSONException{
 
         JSONObject obj = Client.sendRequest("POST",
@@ -486,7 +506,7 @@ public class StepDefinitions {
         assertEquals("201", Client.returnCode);
 
         String todo_id = DefinitionsHelper.getTodoId(title);
-        assertNull(todo_id);
+        assertNotNull(todo_id);
     }
 
     @Then("^a new todo instance with title (.*), status (.*) and description (.*) should be created")
@@ -495,7 +515,7 @@ public class StepDefinitions {
         assertEquals("201", Client.returnCode);
 
         String todo_id = DefinitionsHelper.getTodoId(title);
-        assertNull(todo_id);
+        assertNotNull(todo_id);
         JSONObject obj = Client.sendRequest("GET", DefinitionsHelper.BASE_URL, "tasks/" + todo_id, "");
         assertTrue(obj.get("doneStatus").equals(status));
         assertTrue(obj.get("description").equals(description));

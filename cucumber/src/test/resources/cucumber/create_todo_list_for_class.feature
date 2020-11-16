@@ -3,7 +3,7 @@ Feature: Create a to do list for a new class
 
   Background:
     Given system is ready
-    And the following classes are created in the system:
+    And the following classes (projects) are created in the system:
       | title   | completed   | active	 | description              |
       | COMP417 | false       | true     | Intro to Robotics        |
       | COMP424 | false       | false    | Artificial Intelligence  |
@@ -14,7 +14,7 @@ Feature: Create a to do list for a new class
   Scenario Outline: Create a new class todo list with a title (Normal Flow)
     Given <title> is the title of the new todo
     When a student sends a todo post request
-    Then a new todo instance should be created
+    Then a new todo instance with title <title> should be created
 
     Examples:
       | title         |
@@ -26,7 +26,7 @@ Feature: Create a to do list for a new class
     And <doneStatus> is the done status of the new todo
     And <description> is the description of the new todo
     When a student sends a todo post request
-    Then a new todo instance should be created
+    Then a new todo instance with title <title>, status <doneStatus> and description <description> should be created
 
     Examples:
       | title      | doneStatus | description  |
