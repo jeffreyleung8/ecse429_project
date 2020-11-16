@@ -16,7 +16,7 @@ Feature: Add task to course to do list
       | todo3   | false       | test3       |
       | todo4   | false       | test4       |
       | todo5   | false       | test3       |
-      | todo5   | false       | test4       |
+      | todo6   | false       | test4       |
 	
   Scenario Outline: Add a todo to a course todo list (Normal Flow)
     Given the todo <title> exists in the system
@@ -47,7 +47,7 @@ Feature: Add task to course to do list
     Given the todo <title> exists in the system
     And the project <project> does not exist in the system 
     When adding the todo <title> to the project <project> to do list
-    Then a bad request message should be displayed
+    Then an error not found message should be displayed
 
     Examples: 
       | title  | project  |
