@@ -191,7 +191,7 @@ public class StepDefinitions {
         assertEquals(true, partOf);
     }
 
-    @Given("^the following todos are associated to course {string}")
+    @Given("the following todos are associated to course {string}")
     public void the_following_todos_are_associated_class(String course, DataTable dataTable) {
         String course_id = DefinitionsHelper.getProjectId(course);
         List<Map<String, String>> todos = dataTable.asMaps(String.class, String.class);
@@ -327,7 +327,7 @@ public class StepDefinitions {
                 todo_body.toString());
     }
 
-    @When("a student requests to remove the todo list (.*) for this class (.*)$")
+    @When("^a student requests to remove the todo list (.*) for this class (.*)$")
     public void remove_todo_of_class(String todo, String course) throws JSONException{
         String todo_id = DefinitionsHelper.getTodoId(todo);
         String course_id = DefinitionsHelper.getProjectId(course);
@@ -337,7 +337,7 @@ public class StepDefinitions {
                 "projects/" + course_id + "/tasks/" + todo_id, "");
     }
 
-    @When("a student requests to remove all (.*) todo lists for this class (.*)$")
+    @When("^a student requests to remove all (.*) todo lists for this class (.*)$")
     public void remove_all_todos_of_class(String n, String course) throws JSONException{
         String course_id = DefinitionsHelper.getProjectId(course);
         int numTodos = Integer.parseInt(n);
@@ -480,7 +480,7 @@ public class StepDefinitions {
         JSONArray todos = obj.getJSONArray("todos");
         assertEquals(0, todos.length());
     }
-    @Then("a new todo instance with title (.*) should be created")
+    @Then("^a new todo instance with title (.*) should be created")
     public void todo_instance_title_created(String title){
         // Assert the previous post call was successful
         assertEquals("201", Client.returnCode);
@@ -489,7 +489,7 @@ public class StepDefinitions {
         assertNull(todo_id);
     }
 
-    @Then("a new todo instance with title (.*), status (.*) and description (.*) should be created")
+    @Then("^a new todo instance with title (.*), status (.*) and description (.*) should be created")
     public void todo_instance_title_status_description_created(String title, String status, String description) throws JSONException {
         // Assert the previous post call was successful
         assertEquals("201", Client.returnCode);
@@ -501,7 +501,7 @@ public class StepDefinitions {
         assertTrue(obj.get("description").equals(description));
     }
 
-    @Then("the todo list (.*) should not be part of the class (.*) in the system")
+    @Then("^the todo list (.*) should not be part of the class (.*) in the system")
     public void todo_removed_for_class(String todo, String course) throws JSONException {
         // Assert the previous post call was successful
         assertEquals("201", Client.returnCode);
@@ -522,7 +522,7 @@ public class StepDefinitions {
         assertEquals(false, partOf);
     }
 
-    @Then("all todo lists should be removed for the class (.*) in the system")
+    @Then("^all todo lists should be removed for the class (.*) in the system")
     public void all_todos_removed_for_class(String course) throws JSONException {
         // Assert the previous post call was successful
         assertEquals("201", Client.returnCode);
