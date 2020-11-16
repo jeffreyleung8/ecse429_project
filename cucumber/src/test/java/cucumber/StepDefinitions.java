@@ -156,10 +156,11 @@ public class StepDefinitions {
     
     @Given("{string} does not have any todos")
     public void project_does_not_have_any_todos(String project) throws JSONException {
+        String proj_id = DefinitionsHelper.getProjectId(project);
     	JSONObject obj = Client.sendRequest("GET",
                 DefinitionsHelper.BASE_URL,
-                "projects?title=" + project, "");
-    	JSONArray todos = obj.getJSONArray("tasks");
+                "projects/" + proj_id + "/tasks", "");
+        JSONArray todos = obj.getJSONArray("todos");
         assertEquals(0, todos.length());
     }
     
