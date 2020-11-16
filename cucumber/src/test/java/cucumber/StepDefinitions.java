@@ -146,7 +146,7 @@ public class StepDefinitions {
     	List<Map<String, String>> todos = dataTable.asMaps(String.class, String.class);
         for (Map<String, String> todo : todos) {
             String todo_id = DefinitionsHelper.getTodoId(todo.get("title"));
-            String body = "{ id :" + proj_id + "}";
+            String body = "{ id :" + "\"" + proj_id + "\"" + "}";
             JSONObject obj = Client.sendRequest("POST",
                     DefinitionsHelper.BASE_URL,
                     "todos/" + todo_id + "/tasksof",
@@ -169,11 +169,11 @@ public class StepDefinitions {
     	boolean partOf = false;
     	String todo_id = DefinitionsHelper.getTodoId(todo);
     	String proj_id = DefinitionsHelper.getProjectId(project);
-    	JSONObject obj = Client.sendRequest("GET", DefinitionsHelper.BASE_URL, "todos/" + todo_id, "");
-    	JSONArray tasksof = obj.getJSONArray("tasksof");
-        for(int i = 0; i < tasksof.length(); i++){
-            JSONObject t = tasksof.getJSONObject(i);
-            if(t.get("id").equals(proj_id)) {
+    	JSONObject obj = Client.sendRequest("GET", DefinitionsHelper.BASE_URL, "todos/" + todo_id + "/tasksof", "");
+    	JSONArray projects = obj.getJSONArray("projects");
+        for(int i = 0; i < projects.length(); i++){
+            JSONObject p = projects.getJSONObject(i);
+            if(p.get("id").equals(proj_id)) {
                 partOf = true;
                 break;
             }

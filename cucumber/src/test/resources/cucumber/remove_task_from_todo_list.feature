@@ -4,7 +4,7 @@ Feature: Remove task from course todo list
   Background: 
     Given system is ready
     And the following projects are created in the system:
-    	| title   | completed   | active	 | description |
+      | title   | completed   | active	 | description |
       | course1 | false       | true     | desc1       |
       | course2 | false       | false    | desc2       |
       | course3 | true        | false    | desc3       |
@@ -16,15 +16,19 @@ Feature: Remove task from course todo list
       | todo3   | false       | test3       |
       | todo4   | false       | test3       |
     And the following todos are tasks of 'course1'
-    	| title   | doneStatus  | description |
+      | title   | doneStatus  | description |
       | todo1   | false       | test1       |
       | todo2   | false       | test2       |
+      | todo3   | false       | test1       |
+      | todo4   | false       | test2       |
     And the following todos are tasks of 'course2'
-    	| title   | doneStatus  | description |
+      | title   | doneStatus  | description |
       | todo1   | false       | test1       |
       | todo2   | false       | test2       |
+      | todo3   | false       | test1       |
+      | todo4   | false       | test2       |
     And the following todos are tasks of 'course3'
-    	| todo3   | false       | test3       |
+      | todo3   | false       | test3       |
       | todo4   | false       | test3       |
     And 'course4' does not have any todos
 	
@@ -51,7 +55,7 @@ Feature: Remove task from course todo list
 
     Examples: 
       | project   | title1    | title2    |
-      | course1   | todo1     | todo2     |
+      | course1   | todo3     | todo4     |
       | course2   | todo3     | todo4     |
       
   Scenario Outline: Remove a todo from a non-existent course todo list (Error Flow)
