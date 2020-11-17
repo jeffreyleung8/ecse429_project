@@ -1,8 +1,6 @@
 package cucumber;
 
 import io.cucumber.datatable.DataTable;
-import io.cucumber.java.AfterAll;
-import io.cucumber.java.BeforeAll;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -10,6 +8,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Assert;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 
 import java.util.List;
 import java.util.Map;
@@ -383,6 +383,16 @@ public class StepDefinitions {
                 "{description:"+newDesc+"}");
     }
 
+    @When("^removing the description of the todo (.*)$")
+    public void change_todo_description(String todo){
+
+        String todo_id = DefinitionsHelper.getTodoId(todo);
+        JSONObject obj = Client.sendRequest("POST",
+                DefinitionsHelper.BASE_URL,
+                "todos/"+todo_id,
+                "{description:\"\"}");
+    }
+
     @When("^(.*) is the description of todo (.*)$")
     public void is_the_description_of_todo(String description, String todo) throws JSONException {
         String todo_id = DefinitionsHelper.getTodoId(todo);
@@ -427,12 +437,32 @@ public class StepDefinitions {
         boolean changed = false;
         for(int i = 0; i < todos.length(); i++){
             JSONObject t = todos.getJSONObject(i);
-            if(t.get("description").equals(description)) {
-                changed = true;
-                break;
+            if(t.get("id").equals(todo_id)) {
+                if(t.get("description").equals(description)){
+                    changed = true;
+                    break;
+                }
             }
         }
     	assertEquals(true, changed);
+    }
+
+    @Then("^the description of todo (.*) should now be removed$")
+    public void todo_remove_description(String todo) throws JSONException {
+        String todo_id = DefinitionsHelper.getTodoId(todo);
+        JSONObject obj = Client.sendRequest("GET", DefinitionsHelper.BASE_URL, "todos/" + todo_id, "");
+        JSONArray todos = obj.getJSONArray("todos");
+        boolean changed = false;
+        for(int i = 0; i < todos.length(); i++){
+            JSONObject t = todos.getJSONObject(i);
+            if(t.get("id").equals(todo_id)) {
+                if(t.get("description").equals("")){
+                    changed = true;
+                    break;
+                }
+            }
+        }
+        assertEquals(true, changed);
     }
 
     @Then("^the todo (.*) should be marked completed in the system$")
