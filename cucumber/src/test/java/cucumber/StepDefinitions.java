@@ -1,8 +1,8 @@
 package cucumber;
 
 import io.cucumber.datatable.DataTable;
-import io.cucumber.java.After;
-import io.cucumber.java.Before;
+import io.cucumber.java.AfterAll;
+import io.cucumber.java.BeforeAll;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -20,7 +20,7 @@ public class StepDefinitions {
 
     private JSONObject course_body;
 
-    @Before
+    @BeforeAll
     public void initialization() throws Exception {
         Client.returnCode = "200";
         if(Client.testConnection(DefinitionsHelper.BASE_URL)) {
@@ -33,7 +33,7 @@ public class StepDefinitions {
         }
     }
 
-    @After
+    @AfterAll
     public void resetServer() throws Exception {
         Client.shutDown(DefinitionsHelper.BASE_URL);
         Runtime rt = Runtime.getRuntime();
@@ -364,20 +364,14 @@ public class StepDefinitions {
     public void query_incomplete_todo_of_project(String project) throws JSONException{
         boolean completed = false;
         String proj_id = DefinitionsHelper.getProjectId(project);
-    	JSONObject obj = Client.sendRequest("POST", DefinitionsHelper.BASE_URL, "projects/" + proj_id + "/tasks", "");
-        JSONArray todos = obj.getJSONArray("todos");
-        for(int i = 0; i < todos.length(); i++){
-            JSONObject t = todos.getJSONObject(i);
-            if(t.get("doneStatus").equals("false")) {
-                completed = true;
-                break;
-            }
-        }
     }
 
     @When("^query incomplete todos of non-existing project (.*)$")
     public void query_incomplete_todo_non_existing_project(String project) {
-
+        String proj_id = DefinitionsHelper.getProjectId(project);
+        JSONObject obj = Client.sendRequest("DELETE",
+                DefinitionsHelper.BASE_URL,
+                "projects/" + proj_id, "");
     }
 
     @When("^change (.*) of todo (.*) to (.*)$")
@@ -400,8 +394,8 @@ public class StepDefinitions {
 
     //========================== then ==========================
 
-    @Then("^each todo returned will have (.*) false And each todo will be a task of project (.*)$")
-    public void todo_doneStatus_false__should_be_display(boolean doneStatus, String project) throws JSONException {
+    @Then("^each todo of project (.*) returned will be marked as done$")
+    public void todo_doneStatus_false__should_be_display(String project) throws JSONException {
         String proj_id = DefinitionsHelper.getProjectId(project);
     	JSONObject obj = Client.sendRequest("GET", DefinitionsHelper.BASE_URL, "projects/" + proj_id + "/tasks?doneStatus=false", "");
         JSONArray todos = obj.getJSONArray("todos");
