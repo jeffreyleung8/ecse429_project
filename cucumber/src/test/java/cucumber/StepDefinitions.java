@@ -82,7 +82,7 @@ public class StepDefinitions {
                     body);
         }
     }
-    
+
     @Given("the following projects are created in the system:")
     public void the_following_projects_are_created_in_the_system(DataTable dataTable) throws JSONException {
         List<Map<String, String>> projects = dataTable.asMaps(String.class, String.class);
@@ -169,7 +169,7 @@ public class StepDefinitions {
         }
 
     }
-    
+
     @Given("the following todos are tasks of {string}")
     public void the_following_todos_are_tasks_of(String project, DataTable dataTable) {
     	String proj_id = DefinitionsHelper.getProjectId(project);
@@ -183,7 +183,7 @@ public class StepDefinitions {
                     body);
          }
     }
-    
+
     @Given("{string} does not have any todos")
     public void project_does_not_have_any_todos(String project) throws JSONException {
         String proj_id = DefinitionsHelper.getProjectId(project);
@@ -193,7 +193,7 @@ public class StepDefinitions {
         JSONArray todos = obj.getJSONArray("todos");
         assertEquals(0, todos.length());
     }
-    
+
     @Given("^the todo (.*) is a task of the project (.*)$")
     public void the_todo_is_a_task_of(String todo, String project) throws JSONException {
     	boolean partOf = false;
@@ -266,6 +266,11 @@ public class StepDefinitions {
         this.todo_body.put("description",description);
     }
 
+    @Given("^(.*) is the description of todo (.*)$")
+    public void is_the_description_of_todo(String description) throw JSONException {
+        this.todo_body.put("description", description);
+    }
+
     //========================== when ==========================
     @When("^remove category (.*) from todo (.*)$")
     public void remove_category_from_todo(String category, String todo) {
@@ -315,24 +320,24 @@ public class StepDefinitions {
                 "todos/" + todo_id,
                 body);
     }
-    
+
     @When("^adding the todo (.*) to the project (.*) to do list$")
     public void adding_the_todo_to(String todo, String project) {
         String todo_id = DefinitionsHelper.getTodoId(todo);
         String proj_id = DefinitionsHelper.getProjectId(project);
-        
+
         String body = "{ id :" + "\"" + proj_id + "\"" + " }";
         JSONObject obj = Client.sendRequest("POST",
                 DefinitionsHelper.BASE_URL,
                 "todos/" + todo_id + "/tasksof",
                 body);
     }
-    
+
     @When("^removing the todo (.*) from the project (.*) to do list$")
     public void removing_the_todo_from(String todo, String project) {
         String todo_id = DefinitionsHelper.getTodoId(todo);
         String proj_id = DefinitionsHelper.getProjectId(project);
-        
+
         JSONObject obj = Client.sendRequest("DELETE",
                 DefinitionsHelper.BASE_URL,
                 "todos/" + todo_id + "/tasksof/" + proj_id, "");
@@ -368,8 +373,77 @@ public class StepDefinitions {
         }
     }
 
+    @When("^query incomplete todos of project (.*)$")
+    public void query_incomplete_todo_of_project(String project) throws JSONException{
+        String proj_id = DefinitionsHelper.getProjectId(project);
+    	JSONObject obj = Client.sendRequest("POST", DefinitionsHelper.BASE_URL, "projects/" + proj_id + "/tasks", "");
+        JSONArray todosOfProject = obj.getJSONArray("todos");
+        for(int i = 0; i < todos.length(); i++){
+            JSONObject t = todos.getJSONObject(i);
+            if(t.get("doneStatus").equals("false")) {
+                completed = true;
+                break;
+            }
+        }
+    }
+
+    @When("^query incomplete todos of non-existing project (.*)$")
+    public void query_incomplete_todo_non_existing_project(String project) {
+
+    }
+
+    @When("^change (.*) of todo (.*) to (.*)$")
+    public void change_todo_description(String oldDesc, String todo, String newDesc){
+        String todo_id = DefinitionsHelper.getTodoId(todo);
+        JSONObject obj = Client.sendRequest("POST",
+                DefinitionsHelper.BASE_URL,
+                "todos/"+todo_id,
+                {"description:"+newDesc});
+    }
+
     //========================== then ==========================
-    
+
+    @Then("^each todo returned will have (.*) false And each todo will be a task of project (.*)$")
+    public void todo_doneStatus_false__should_be_display(boolean doneStatus, String project) {
+        String proj_id = DefinitionsHelper.getProjectId(project);
+    	JSONObject obj = Client.sendRequest("GET", DefinitionsHelper.BASE_URL, "projects/" + proj_id + "/tasks?doneStatus=false", "");
+        JSONArray todosOfProject = obj.getJSONArray("todos");
+        boolean completed = false;
+        for(int i = 0; i < todos.length(); i++){
+            JSONObject t = todos.getJSONObject(i);
+            if(t.get("doneStatus").equals("true")) {
+                completed = true;
+                break;
+            }
+        }
+        assert(false, completed);
+    }
+
+    @Then("^no todos should be returned for project (.*)$")
+    public void no_todos(String project) {
+        String proj_id = DefinitionsHelper.getProjectId(project);
+    	JSONObject obj = Client.sendRequest("GET", DefinitionsHelper.BASE_URL, "projects/" + proj_id + "/tasks?doneStatus=false", "");
+        JSONArray todosOfProject = obj.getJSONArray("todos");
+
+        assertEquals(0, todosOfProject.length);
+    }
+
+    @Then("^the description of todo (.*) should be (.*)$")
+    public void todo_new_description(String todo, String description) {
+        String todo_id = DefinitionsHelper.getTodoId(todo);
+        JSONObject obj = Client.sendRequest("GET", DefinitionsHelper.BASE_URL, "todos/" + todo_id, "");
+        JSONArray todos = obj.getJSONArray("todos");
+        boolean changed = false;
+        for(int i = 0; i < todos.length(); i++){
+            JSONObject t = todos.getJSONObject(i);
+            if(t.get("description").equals("description")) {
+                changed = true;
+                break;
+            }
+        }
+    	assertEquals(true, changed);
+    }
+
     @Then("^the todo (.*) should be marked completed in the system$")
     public void the_todo_should_be_marked(String todo) throws JSONException {
     	boolean completed = false;
@@ -385,7 +459,7 @@ public class StepDefinitions {
         }
     	assertEquals(true, completed);
     }
-    
+
     @Then("^the todo (.*) should be part of the project (.*) to do list in the system$")
     public void the_todo_should_be_part_of(String todo, String project) throws JSONException {
     	boolean partOf = false;
@@ -402,7 +476,7 @@ public class StepDefinitions {
         }
         assertEquals(true, partOf);
     }
-    
+
     @Then("^the todo (.*) should not be part of the project (.*) to do list in the system$")
     public void the_todo_should_not_be_part_of(String todo, String project) throws JSONException {
     	boolean partOf = false;
@@ -419,7 +493,7 @@ public class StepDefinitions {
         }
         assertEquals(false, partOf);
     }
-    
+
     @Then("^the category of the todo (.*) should be (.*)$")
     public void the_category_of_the_todo_should_be(String todo, String category) throws JSONException {
         boolean sameId = false;

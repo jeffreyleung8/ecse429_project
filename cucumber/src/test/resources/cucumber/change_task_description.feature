@@ -11,9 +11,9 @@ Feature: Change task description
 
   Scenario Outline: student changes the description of a task once (Normal flow)
     Given the todo <title> exists in the system
-    And the todo <description> is defined
-    When change todo <title> 's <oldDescription>
-    Then the todo <title> should be <newDescription>
+    And <oldDescription> is the description of todo <title>
+    When change <oldDescription> of todo <title> to <newDescription>
+    Then the description of todo <title> should be <newDescription>
     Examples:
     | title | oldDescription | newDescription |
     | test1 | test1          | hello          |
@@ -22,9 +22,9 @@ Feature: Change task description
 
 Scenario Outline: student removes description. (Alt flow)
     Given the todo <title> exists in the system
-    And the todo <description> is defined
-    When change todo <title> 's <oldDescription>
-    Then the todo <title> should be <newDescription>
+    And <oldDescription> is the description of todo <title>
+    When change <oldDescription> of todo <title> to <newDescription>
+    Then the description of todo <title> should be <newDescription>
     Examples:
       | title | oldDescription | newDescription |
       | test1 | test1          | ""             |
@@ -33,6 +33,7 @@ Scenario Outline: student removes description. (Alt flow)
 
  Scenario Outline: student changes the description of a non existing todo (Error flow)
     Given the todo <title> does not exist in the system
+    When change <oldDescription> of todo <title> to <newDescription>
     Then an error not found message should be displayed
     Examples:
       | title |
