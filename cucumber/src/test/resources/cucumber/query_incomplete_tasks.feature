@@ -59,10 +59,9 @@ Feature: Query incomplete tasks
       | course4   |
 
   Scenario Outline: student query incompleted tasks of a non-existing project. (Error flow)
-    Given the todo <title> exists in the system
-    And the project <project> does not exist in the system
+    Given the project <project> does not exist in the system
     When query incomplete todos of non-existing project <project>
     Then an error not found message should be displayed
     Examples:
-      | project   | title |
-      | course1   | test1 |
+      | project   |
+      | course6   |

@@ -271,6 +271,14 @@ public class StepDefinitions {
         this.course_body.put("description", description);
     }
 
+    @Given("^the project (.*) has no todos")
+    public void project_has_no_todos(String project) throws JSONException {
+        String course_id = DefinitionsHelper.getProjectId(project);
+        JSONObject obj = Client.sendRequest("GET", DefinitionsHelper.BASE_URL, "projects/" + course_id +"/tasks", "");
+        JSONArray todos = obj.getJSONArray("todos");
+        assertEquals(0, todos.length());
+    }
+
     //========================== when ==========================
     @When("^remove category (.*) from todo (.*)$")
     public void remove_category_from_todo(String category, String todo) {
