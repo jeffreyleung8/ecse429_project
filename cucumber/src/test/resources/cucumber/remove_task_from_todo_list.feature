@@ -15,7 +15,7 @@ Feature: Remove task from course todo list
       | todo2   | false       | test2       |
       | todo3   | false       | test3       |
       | todo4   | false       | test3       |
-    And the following todos are tasks of ≈
+    And the following todos are tasks of 'course1'
       | title   | doneStatus  | description |
       | todo1   | false       | test1       |
       | todo2   | false       | test2       |
