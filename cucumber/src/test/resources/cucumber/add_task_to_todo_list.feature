@@ -4,19 +4,19 @@ Feature: Add task to course to do list
   Background: 
     Given system is ready
     And the following projects are created in the system:
-    	| title   | completed   | active	 | description |
-      | course1 | false       | true     | desc1       |
-      | course2 | false       | false    | desc2       |
-      | course3 | true        | false    | desc3       |
-      | course4 | true        | false    | desc4       |
+      | title   | completed   | active	 | description |
+      | class1  | false       | true     | desc1       |
+      | class2  | false       | false    | desc2       |
+      | class3  | true        | false    | desc3       |
+      | class4  | true        | false    | desc4       |
     And the following todos are created in the system:
       | title   | doneStatus  | description |
-      | todo1   | false       | test1       |
-      | todo2   | false       | test2       |
-      | todo3   | false       | test3       |
-      | todo4   | false       | test4       |
-      | todo5   | false       | test3       |
-      | todo6   | false       | test4       |
+      | hwk1    | false       | test1       |
+      | hwk2    | true        | test2       |
+      | hwk3    | false       | test3       |
+      | hwk4    | true        | test4       |
+      | hwk5    | false       | test3       |
+      | hwk6    | true        | test4       |
 	
   Scenario Outline: Add a todo to a course todo list (Normal Flow)
     Given the todo <title> exists in the system
@@ -26,8 +26,8 @@ Feature: Add task to course to do list
 
     Examples: 
       | project   | title     | 
-      | course1   | todo1     | 
-      | course2   | todo2     |     
+      | class1    | hwk1      |
+      | class2    | hwk2      |
       
   Scenario Outline: Add multiple todos to the same course todo list (Alt Flow)
     Given the todo <title1> exists in the system
@@ -40,8 +40,8 @@ Feature: Add task to course to do list
 
     Examples: 
       | project   | title1    | title2    |
-      | course3   | todo5     | todo6     |
-      | course4   | todo3     | todo4     |
+      | class3    | hwk5      | hwk6      |
+      | class4    | hwk3      | hwk4      |
       
   Scenario Outline: Add a todo to a non-existent course todo list (Error Flow)
     Given the todo <title> exists in the system
@@ -51,5 +51,5 @@ Feature: Add task to course to do list
 
     Examples: 
       | title  | project  |
-      | todo1  | course10 |
-      | todo2  | course20 |
+      | hwk1   | class10  |
+      | hwk2   | class20  |

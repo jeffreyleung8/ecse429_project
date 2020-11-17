@@ -18,7 +18,7 @@ import static org.junit.Assert.*;
 
 public class StepDefinitions {
 
-    private JSONObject todo_body = new JSONObject();
+    private JSONObject course_body;
 
     @Before
     public void initialization() throws Exception {
@@ -49,6 +49,7 @@ public class StepDefinitions {
             System.out.println("Set-up\tError connecting to localhost:4567");
             Assert.fail();
         }
+        this.course_body = new JSONObject();
     }
     @Given("the following categories are created in the system:")
     public void the_following_categories_are_created_in_the_system(DataTable dataTable) throws JSONException {
@@ -103,7 +104,7 @@ public class StepDefinitions {
         }
     }
 
-    @Given("the following classes \\(projects) are created in the system:")
+    @Given("the following classes are created in the system:")
     public void the_following_classes_are_created_in_the_system(DataTable dataTable) throws JSONException {
         List<Map<String, String>> projects = dataTable.asMaps(String.class, String.class);
 
@@ -139,12 +140,12 @@ public class StepDefinitions {
     public void the_project_does_not_exist_in_the_system(String p) {
         assertNull(DefinitionsHelper.getProjectId(p));
     }
-    @Given("^the class (.*) exists in the system$")
-    public void the_class_exists_in_the_system(String c) {
+    @Given("^the course with title (.*) exists in the system$")
+    public void the_course_exists_in_the_system(String c) {
         assertNotNull(DefinitionsHelper.getProjectId(c));
     }
-    @Given("^the class (.*) does not exist in the system$")
-    public void the_class_does_not_exist_in_the_system(String c) {
+    @Given("^the course with title (.*) does not exist in the system$")
+    public void the_course_does_not_exist_in_the_system(String c) {
         assertNull(DefinitionsHelper.getProjectId(c));
     }
     @Given("^the category (.*) exists in the system$")
@@ -211,13 +212,13 @@ public class StepDefinitions {
         assertEquals(true, partOf);
     }
 
-    @Given("the following todos are associated to course {string}")
+    @Given("^the following todos are associated to course (.*)")
     public void the_following_todos_are_associated_class(String course, DataTable dataTable) {
         String course_id = DefinitionsHelper.getProjectId(course);
         List<Map<String, String>> todos = dataTable.asMaps(String.class, String.class);
         for (Map<String, String> todo : todos) {
             String todo_id = DefinitionsHelper.getTodoId(todo.get("title"));
-            String body = "{ id :" + todo_id + "}";
+            String body = "{ id :" + "\"" + todo_id + "\"" + "}";
             JSONObject obj = Client.sendRequest("POST",
                     DefinitionsHelper.BASE_URL,
                     "projects/" + course_id + "/tasks",
@@ -225,45 +226,49 @@ public class StepDefinitions {
         }
     }
 
-    @Given("^(.*) is a todo list for the class (.*)$")
-    public void todo_for_class(String todo, String course) throws JSONException {
-        boolean partOf = false;
-        String todo_id = DefinitionsHelper.getTodoId(todo);
+    @Given("^the course with title (.*) has (.*) todos")
+    public void num_todos_for_class(String course, String n) throws JSONException {
+        int numTodos = Integer.parseInt(n);
         String course_id = DefinitionsHelper.getProjectId(course);
-        JSONObject obj = Client.sendRequest("GET", DefinitionsHelper.BASE_URL, "projects/" + course_id, "");
-        JSONArray todos = obj.getJSONArray("tasks");
-        for(int i = 0; i < todos.length(); i++){
-            JSONObject t = todos.getJSONObject(i);
-            if(t.get("id").equals(todo_id)) {
-                partOf = true;
-                break;
+        JSONObject obj = Client.sendRequest("GET", DefinitionsHelper.BASE_URL, "projects/" + course_id +"/tasks", "");
+        JSONArray todos = obj.getJSONArray("todos");
+        assertEquals(numTodos, todos.length());
+    }
+
+    @Given("^the course with title (.*) has an empty todo list")
+    public void course_empty_todo_list(String course) throws JSONException {
+        String course_id = DefinitionsHelper.getProjectId(course);
+        JSONObject obj = Client.sendRequest("GET", DefinitionsHelper.BASE_URL, "projects/" + course_id +"/tasks", "");
+        JSONArray todos = obj.getJSONArray("todos");
+        assertEquals(0, todos.length());
+    }
+
+    @Given("^(.*) is the active status of the new course")
+    public void is_the_active_status_of_new_course(String active) throws JSONException {
+        if(active != null) {
+            if (active.toUpperCase().equals("TRUE") || active.toUpperCase().equals("FALSE")) {
+                this.course_body.put("active", Boolean.parseBoolean(active));
+                return;
             }
         }
-        assertEquals(true, partOf);
+        this.course_body.put("active", active);
+
     }
 
-    @Given("^the class (.*) has (.*) todo lists$")
-    public void number_todos_for_class(String course, String n) throws JSONException {
-        int numberOfCourses = Integer.parseInt(n);
-        String course_id = DefinitionsHelper.getProjectId(course);
-        JSONObject obj = Client.sendRequest("GET", DefinitionsHelper.BASE_URL, "projects/" + course_id, "");
-        JSONArray todos = obj.getJSONArray("tasks");
-        assertEquals(todos.length(), numberOfCourses);
+    @Given("^(.*) is the completed status of the new course")
+    public void is_the_completed_status_of_new_course(String completed) throws JSONException {
+        if(completed != null) {
+            if (completed.toUpperCase().equals("TRUE") || completed.toUpperCase().equals("FALSE")) {
+                this.course_body.put("active", Boolean.parseBoolean(completed));
+            }
+        }
+
+        this.course_body.put("active", completed);
     }
 
-    @Given("^(.*) is the title of the new todo$")
-    public void is_the_title_of_new_todo(String todoTitle) throws JSONException {
-        this.todo_body.put("title",todoTitle);
-    }
-
-    @Given("^(.*) is the done status of the new todo$")
-    public void is_the_status_of_new_todo(String doneStatus) throws JSONException {
-        this.todo_body.put("doneStatus",doneStatus);
-    }
-
-    @Given("^(.*) is the description of the new todo$")
-    public void is_the_description_of_new_todo(String description) throws JSONException {
-        this.todo_body.put("description",description);
+    @Given("^(.*) is the description of the new course")
+    public void is_the_description_of_new_course(String description) throws JSONException {
+        this.course_body.put("description", description);
     }
 
     @Given("^(.*) is the description of todo (.*)$")
@@ -343,34 +348,21 @@ public class StepDefinitions {
                 "todos/" + todo_id + "/tasksof/" + proj_id, "");
     }
 
-    @When("a student sends a todo post request$")
-    public void create_new_todo() throws JSONException{
-
+    @When("^a student requests to create a new course with title (.*)$")
+    public void create_new_course_with_title(String title) throws JSONException{
+        course_body.put("title",title);
         JSONObject obj = Client.sendRequest("POST",
                 DefinitionsHelper.BASE_URL,
-                "todos",
-                todo_body.toString());
+                "projects",
+                course_body.toString());
     }
 
-    @When("^a student requests to remove the todo list (.*) for this class (.*)$")
-    public void remove_todo_of_class(String todo, String course) throws JSONException{
-        String todo_id = DefinitionsHelper.getTodoId(todo);
-        String course_id = DefinitionsHelper.getProjectId(course);
-
+    @When("^a student requests to remove the course with title (.*)$")
+    public void remove_course_with_title(String title) throws JSONException{
+        String course_id = DefinitionsHelper.getProjectId(title);
         JSONObject obj = Client.sendRequest("DELETE",
                 DefinitionsHelper.BASE_URL,
-                "projects/" + course_id + "/tasks/" + todo_id, "");
-    }
-
-    @When("^a student requests to remove all (.*) todo lists for this class (.*)$")
-    public void remove_all_todos_of_class(String n, String course) throws JSONException{
-        String course_id = DefinitionsHelper.getProjectId(course);
-        int numTodos = Integer.parseInt(n);
-        for(int i = 1; i <= numTodos; i++){
-            JSONObject obj = Client.sendRequest("DELETE",
-                    DefinitionsHelper.BASE_URL,
-                    "projects/" + course_id + "/tasks/" + i, "");
-        }
+                "projects/" + course_id, "");
     }
 
     @When("^query incomplete todos of project (.*)$")
@@ -574,41 +566,47 @@ public class StepDefinitions {
         JSONArray todos = obj.getJSONArray("todos");
         assertEquals(0, todos.length());
     }
-    @Then("^a new todo instance with title (.*) should be created")
-    public void todo_instance_title_created(String title){
+    @Then("^a new course instance with title (.*) should be created")
+    public void course_instance_title_created(String title){
         // Assert the previous post call was successful
         assertEquals("201", Client.returnCode);
 
-        String todo_id = DefinitionsHelper.getTodoId(title);
-        assertNotNull(todo_id);
+        String course_id = DefinitionsHelper.getProjectId(title);
+        assertNotNull(course_id);
     }
 
-    @Then("^a new todo instance with title (.*), status (.*) and description (.*) should be created")
-    public void todo_instance_title_status_description_created(String title, String status, String description) throws JSONException {
+    @Then("^a new course instance with (.*), (.*), (.*) and (.*) should be created")
+    public void course_instance_title_status_description_created(String title, String active, String completed, String description) throws JSONException {
         // Assert the previous post call was successful
         assertEquals("201", Client.returnCode);
 
-        String todo_id = DefinitionsHelper.getTodoId(title);
-        assertNotNull(todo_id);
-        JSONObject obj = Client.sendRequest("GET", DefinitionsHelper.BASE_URL, "tasks/" + todo_id, "");
-        assertTrue(obj.get("doneStatus").equals(status));
-        assertTrue(obj.get("description").equals(description));
+        String course_id = DefinitionsHelper.getProjectId(title);
+        assertNotNull(course_id);
+        JSONObject obj = Client.sendRequest("GET", DefinitionsHelper.BASE_URL, "projects/" + course_id, "");
+        JSONArray projects = obj.getJSONArray("projects");
+        for(int i = 0; i < projects.length(); i++){
+            JSONObject o = (JSONObject) projects.get(i);
+            if (o.get("id").equals(course_id)){
+                assertEquals(active, o.get("active"));
+                assertEquals(completed, o.get("completed"));
+                assertEquals(description, o.get("description"));
+            }
+        }
     }
 
-    @Then("^the todo list (.*) should not be part of the class (.*) in the system")
-    public void todo_removed_for_class(String todo, String course) throws JSONException {
+    @Then("^the course with title (.*) should be removed from the system")
+    public void check_course_removed(String title) throws JSONException {
         // Assert the previous post call was successful
-        assertEquals("201", Client.returnCode);
+        assertEquals("200", Client.returnCode);
 
         boolean partOf = false;
-        String todo_id = DefinitionsHelper.getTodoId(todo);
-        String course_id = DefinitionsHelper.getProjectId(course);
+        String course_id = DefinitionsHelper.getProjectId(title);
 
-        JSONObject obj = Client.sendRequest("GET", DefinitionsHelper.BASE_URL, "projects/" + course_id, "");
-        JSONArray todos = obj.getJSONArray("tasks");
-        for(int i = 0; i < todos.length(); i++){
-            JSONObject t = todos.getJSONObject(i);
-            if(t.get("id").equals(todo_id)) {
+        JSONObject obj = Client.sendRequest("GET", DefinitionsHelper.BASE_URL, "projects", "");
+        JSONArray courses = obj.getJSONArray("projects");
+        for(int i = 0; i < courses.length(); i++){
+            JSONObject c = courses.getJSONObject(i);
+            if(c.get("id").equals(course_id)) {
                 partOf = true;
                 break;
             }
@@ -616,22 +614,11 @@ public class StepDefinitions {
         assertEquals(false, partOf);
     }
 
-    @Then("^all todo lists should be removed for the class (.*) in the system")
-    public void all_todos_removed_for_class(String course) throws JSONException {
-        // Assert the previous post call was successful
-        assertEquals("201", Client.returnCode);
+    @Then("an error message \"Invalid active status\" should be displayed")
+    public void an_error_invalid_status_should_be_displayed(){ assertEquals("400", Client.returnCode);}
 
-        String course_id = DefinitionsHelper.getProjectId(course);
-        JSONObject obj = Client.sendRequest("GET", DefinitionsHelper.BASE_URL, "projects/" + course_id, "");
-        JSONArray todos = obj.getJSONArray("tasks");
-        assertEquals(0, todos.length());
-    }
-
-    @Then("an error message \"Todo instance not created\" should be displayed")
-    public void todo_instance_should_be_created(){ assertEquals("404", Client.returnCode);}
-
-    @Then("an error \"Todo not removed\" should be displayed")
-    public void todo_not_removed(){ assertEquals("404", Client.returnCode);}
+    @Then("an error \"Course does not exist\" should be displayed")
+    public void an_error_course_dne_should_be_displayed(){ assertEquals("404", Client.returnCode);}
 
     @Then("an error not found message should be displayed")
     public void an_error_not_found_message_should_be_displayed() {
