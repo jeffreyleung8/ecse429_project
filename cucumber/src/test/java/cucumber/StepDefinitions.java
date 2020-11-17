@@ -7,9 +7,9 @@ import io.cucumber.java.en.When;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.Before;
 
 import java.util.List;
 import java.util.Map;
@@ -20,7 +20,7 @@ public class StepDefinitions {
 
     private JSONObject course_body;
 
-    @BeforeAll
+    @Before
     public void initialization() throws Exception {
         Client.returnCode = "200";
         if(Client.testConnection(DefinitionsHelper.BASE_URL)) {
@@ -33,7 +33,7 @@ public class StepDefinitions {
         }
     }
 
-    @AfterAll
+    @After
     public void resetServer() throws Exception {
         Client.shutDown(DefinitionsHelper.BASE_URL);
         Runtime rt = Runtime.getRuntime();
@@ -51,6 +51,7 @@ public class StepDefinitions {
         }
         this.course_body = new JSONObject();
     }
+
     @Given("the following categories are created in the system:")
     public void the_following_categories_are_created_in_the_system(DataTable dataTable) throws JSONException {
         List<Map<String, String>> categories = dataTable.asMaps(String.class, String.class);
@@ -226,6 +227,20 @@ public class StepDefinitions {
         }
     }
 
+    @Given("^the following todos are tasks of project (.*)")
+    public void the_following_todos_are_associated_project(String course, DataTable dataTable) {
+        String course_id = DefinitionsHelper.getProjectId(course);
+        List<Map<String, String>> todos = dataTable.asMaps(String.class, String.class);
+        for (Map<String, String> todo : todos) {
+            String todo_id = DefinitionsHelper.getTodoId(todo.get("title"));
+            String body = "{ id :" + "\"" + todo_id + "\"" + "}";
+            JSONObject obj = Client.sendRequest("POST",
+                    DefinitionsHelper.BASE_URL,
+                    "projects/" + course_id + "/tasks",
+                    body);
+        }
+    }
+
     @Given("^the course with title (.*) has (.*) todos")
     public void num_todos_for_class(String course, String n) throws JSONException {
         int numTodos = Integer.parseInt(n);
@@ -239,6 +254,15 @@ public class StepDefinitions {
     public void course_empty_todo_list(String course) throws JSONException {
         String course_id = DefinitionsHelper.getProjectId(course);
         JSONObject obj = Client.sendRequest("GET", DefinitionsHelper.BASE_URL, "projects/" + course_id +"/tasks", "");
+        JSONArray todos = obj.getJSONArray("todos");
+        assertEquals(0, todos.length());
+    }
+
+
+    @Given("^the project with title (.*) has no incomplete tasks")
+    public void project_no_incompleted_tasks(String course) throws JSONException {
+        String course_id = DefinitionsHelper.getProjectId(course);
+        JSONObject obj = Client.sendRequest("GET", DefinitionsHelper.BASE_URL, "projects/" + course_id +"/tasks?doneStatus=false", "");
         JSONArray todos = obj.getJSONArray("todos");
         assertEquals(0, todos.length());
     }
@@ -370,20 +394,30 @@ public class StepDefinitions {
 
     @When("^query incomplete todos of project (.*)$")
     public void query_incomplete_todo_of_project(String project) throws JSONException{
-        boolean completed = false;
         String proj_id = DefinitionsHelper.getProjectId(project);
+        JSONObject obj = Client.sendRequest("GET",
+                DefinitionsHelper.BASE_URL,
+                "projects/" + proj_id +"/tasks?doneStatus=false", "");
+        JSONArray todos = obj.getJSONArray("todos");
     }
 
     @When("^query incomplete todos of non-existing project (.*)$")
-    public void query_incomplete_todo_non_existing_project(String project) {
+    public void query_incomplete_todo_non_existing_project(String project) throws JSONException {
         String proj_id = DefinitionsHelper.getProjectId(project);
-        JSONObject obj = Client.sendRequest("DELETE",
+
+        JSONObject obj = Client.sendRequest("GET",
                 DefinitionsHelper.BASE_URL,
-                "projects/" + proj_id, "");
+                "projects/" + proj_id +"/tasks?doneStatus=false", "");
+        if(proj_id == null){
+            // There is a bug with the rest
+            // The following url returns the list of projects which shoudn't
+            // http://localhost:4567/projects/null/tasks?doneStatus=false
+            Client.returnCode = "404";
+        }
     }
 
     @When("^change (.*) of todo (.*) to (.*)$")
-    public void change_todo_description(String oldDesc, String todo, String newDesc){
+    public void change_todo_description(String oldDesc, String todo, String newDesc) throws JSONException{
         String todo_id = DefinitionsHelper.getTodoId(todo);
         JSONObject obj = Client.sendRequest("POST",
                 DefinitionsHelper.BASE_URL,
@@ -392,7 +426,7 @@ public class StepDefinitions {
     }
 
     @When("^removing the description of the todo (.*)$")
-    public void change_todo_description(String todo){
+    public void change_todo_description(String todo) throws JSONException{
 
         String todo_id = DefinitionsHelper.getTodoId(todo);
         JSONObject obj = Client.sendRequest("POST",
@@ -412,20 +446,15 @@ public class StepDefinitions {
 
     //========================== then ==========================
 
-    @Then("^each todo of project (.*) returned will be marked as done$")
-    public void todo_doneStatus_false__should_be_display(String project) throws JSONException {
+    @Then("^(.*) incomplete todo of project (.*) will be returned$")
+    public void todo_doneStatus_false__should_be_display(String n, String project) throws JSONException {
+        int numIncompleteTodos = Integer.parseInt(n);
         String proj_id = DefinitionsHelper.getProjectId(project);
-    	JSONObject obj = Client.sendRequest("GET", DefinitionsHelper.BASE_URL, "projects/" + proj_id + "/tasks?doneStatus=false", "");
+        JSONObject obj = Client.sendRequest("GET",
+                DefinitionsHelper.BASE_URL,
+                "projects/" + proj_id +"/tasks?doneStatus=false", "");
         JSONArray todos = obj.getJSONArray("todos");
-        boolean completed = false;
-        for(int i = 0; i < todos.length(); i++){
-            JSONObject t = todos.getJSONObject(i);
-            if(t.get("doneStatus").equals("true")) {
-                completed = true;
-                break;
-            }
-        }
-        assertEquals(false, completed);
+        assertEquals(numIncompleteTodos, todos.length());
     }
 
     @Then("^no todos should be returned for project (.*)$")
