@@ -44,7 +44,7 @@ Feature: Query incomplete tasks
     Given the todo <title> exists in the system
     And the project <project> exists in the system
     When query incomplete todos of project <project>
-    Then no todos should be returned for project <project>.
+    Then no todos should be returned for project <project>
     Examples:
       | project   | title |
       | course3   | test5 |
@@ -53,7 +53,7 @@ Feature: Query incomplete tasks
     Given the project <project> exists in the system
     And the project <project> has no todos
     When query incomplete todos of project <project>
-    Then no todos should be returned for project <project>.
+    Then no todos should be returned for project <project>
     Examples:
       | project   |
       | course4   |
@@ -62,7 +62,7 @@ Feature: Query incomplete tasks
     Given the todo <title> exists in the system
     And the project <project> does not exist in the system
     When query incomplete todos of non-existing project <project>
-    Then an error not found message should be displayed.
+    Then an error not found message should be displayed
     Examples:
       | project   | title |
       | course1   | test1 |
