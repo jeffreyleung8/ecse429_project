@@ -271,11 +271,6 @@ public class StepDefinitions {
         this.course_body.put("description", description);
     }
 
-    @Given("^(.*) is the description of todo (.*)$")
-    public void is_the_description_of_todo(String description) throw JSONException {
-        this.todo_body.put("description", description);
-    }
-
     //========================== when ==========================
     @When("^remove category (.*) from todo (.*)$")
     public void remove_category_from_todo(String category, String todo) {
@@ -367,9 +362,10 @@ public class StepDefinitions {
 
     @When("^query incomplete todos of project (.*)$")
     public void query_incomplete_todo_of_project(String project) throws JSONException{
+        boolean completed = false;
         String proj_id = DefinitionsHelper.getProjectId(project);
     	JSONObject obj = Client.sendRequest("POST", DefinitionsHelper.BASE_URL, "projects/" + proj_id + "/tasks", "");
-        JSONArray todosOfProject = obj.getJSONArray("todos");
+        JSONArray todos = obj.getJSONArray("todos");
         for(int i = 0; i < todos.length(); i++){
             JSONObject t = todos.getJSONObject(i);
             if(t.get("doneStatus").equals("false")) {
@@ -390,16 +386,25 @@ public class StepDefinitions {
         JSONObject obj = Client.sendRequest("POST",
                 DefinitionsHelper.BASE_URL,
                 "todos/"+todo_id,
-                {"description:"+newDesc});
+                "{description:"+newDesc+"}");
+    }
+
+    @When("^(.*) is the description of todo (.*)$")
+    public void is_the_description_of_todo(String description, String todo) throws JSONException {
+        String todo_id = DefinitionsHelper.getTodoId(todo);
+        JSONObject obj = Client.sendRequest("POST",
+                DefinitionsHelper.BASE_URL,
+                "todos/"+todo_id,
+                "description:"+description);
     }
 
     //========================== then ==========================
 
     @Then("^each todo returned will have (.*) false And each todo will be a task of project (.*)$")
-    public void todo_doneStatus_false__should_be_display(boolean doneStatus, String project) {
+    public void todo_doneStatus_false__should_be_display(boolean doneStatus, String project) throws JSONException {
         String proj_id = DefinitionsHelper.getProjectId(project);
     	JSONObject obj = Client.sendRequest("GET", DefinitionsHelper.BASE_URL, "projects/" + proj_id + "/tasks?doneStatus=false", "");
-        JSONArray todosOfProject = obj.getJSONArray("todos");
+        JSONArray todos = obj.getJSONArray("todos");
         boolean completed = false;
         for(int i = 0; i < todos.length(); i++){
             JSONObject t = todos.getJSONObject(i);
@@ -408,27 +413,27 @@ public class StepDefinitions {
                 break;
             }
         }
-        assert(false, completed);
+        assertEquals(false, completed);
     }
 
     @Then("^no todos should be returned for project (.*)$")
-    public void no_todos(String project) {
+    public void no_todos(String project) throws JSONException {
         String proj_id = DefinitionsHelper.getProjectId(project);
     	JSONObject obj = Client.sendRequest("GET", DefinitionsHelper.BASE_URL, "projects/" + proj_id + "/tasks?doneStatus=false", "");
         JSONArray todosOfProject = obj.getJSONArray("todos");
 
-        assertEquals(0, todosOfProject.length);
+        assertEquals(0, todosOfProject.length());
     }
 
     @Then("^the description of todo (.*) should be (.*)$")
-    public void todo_new_description(String todo, String description) {
+    public void todo_new_description(String todo, String description) throws JSONException {
         String todo_id = DefinitionsHelper.getTodoId(todo);
         JSONObject obj = Client.sendRequest("GET", DefinitionsHelper.BASE_URL, "todos/" + todo_id, "");
         JSONArray todos = obj.getJSONArray("todos");
         boolean changed = false;
         for(int i = 0; i < todos.length(); i++){
             JSONObject t = todos.getJSONObject(i);
-            if(t.get("description").equals("description")) {
+            if(t.get("description").equals(description)) {
                 changed = true;
                 break;
             }
