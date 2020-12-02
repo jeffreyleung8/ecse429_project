@@ -28,6 +28,7 @@ src/ecse429_project.iml
 src/out/
 
 cucumber/.idea/misc.xml
-.classpath
-.idea
-cucumber/.idea**
+*.classpath
+*.idea
+**/cucumber/.idea**
+**/target
