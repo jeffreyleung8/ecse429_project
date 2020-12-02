@@ -30,5 +30,5 @@ src/out/
 cucumber/.idea/misc.xml
 *.classpath
 *.idea
-**/cucumber/.idea**
+**/cucumber/.idea/
 **/target
