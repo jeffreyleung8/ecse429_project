@@ -81,38 +81,31 @@ public class Client {
         return null;
     }
 
-    public static String sendRequestXML(String requestType, String baseUrl, String path, String body) {
+    public static int getResponseCode(String requestType, String baseUrl, String path, String body) {
         try {
             URL url = new URL(baseUrl + path);
-            System.out.println("Sending: " + requestType + " " + url.toString());
+//            System.out.println("Sending: " + requestType + " " + url.toString());
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
             connection.setDoInput(true);
             connection.setDoOutput(true);
 
             connection.setRequestMethod(requestType);
-            connection.setRequestProperty("Accept", "application/xml");
-            connection.setRequestProperty("Content-Type", "application/xml; charset=UTF-8");
+            connection.setRequestProperty("Accept", "application/json");
+            connection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
 
-            if(!body.equals("")) {
+            if(body != "") {
                 OutputStreamWriter writer = new OutputStreamWriter(connection.getOutputStream(), "UTF-8");
                 writer.write(body);
                 writer.close();
             }
-            returnCode = connection.getResponseCode() + "";
-            System.out.println("Response Code: "+ connection.getResponseCode() + " "
-                    + connection.getResponseMessage());
 
-            BufferedReader br = new BufferedReader(new InputStreamReader((connection.getInputStream())));
-            String response = br.readLine();
-            if (response != null) {
-                connection.disconnect();
-                return response;
-            }
+            connection.disconnect();
+            return connection.getResponseCode();
         } catch (IOException e) {
-            //e.printStackTrace();
+            e.printStackTrace();
         }
-        return null;
+        return 0;
     }
 }
 

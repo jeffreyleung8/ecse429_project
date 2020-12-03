@@ -20,4 +20,5 @@ public class Const {
 	final static String ADD = "add";
 	final static String CHANGE = "change";
 	final static String DELETE = "delete";
+	final static int NOT_FOUND = 404;
 }

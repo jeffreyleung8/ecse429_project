@@ -1,5 +1,9 @@
+import org.json.JSONArray;
 import org.json.JSONObject;
 import java.security.SecureRandom;
+
+import static org.junit.Assert.assertEquals;
+
 /***
  * Class containing all the methods making requests to the backend server
  * @author Jeffrey
@@ -7,9 +11,13 @@ import java.security.SecureRandom;
  */
 public class Controller {
 
-    public String lastTodoId;
-    public String lastProjectId;
-    public String lastCategoryId;
+    private String lastTodoId;
+    private String lastProjectId;
+    private String lastCategoryId;
+    private String lastTodoTitle;
+    private String lastProjectTitle;
+    private String lastCategoryTitle;
+
 
     public Controller(){}
 
@@ -54,7 +62,7 @@ public class Controller {
     }
 
     // ADD
-    public void add_random(String class_name) throws Exception{
+    private void add_random(String class_name) throws Exception{
         JSONObject obj;
         switch(class_name) {
             case Const.TODO:
@@ -77,25 +85,28 @@ public class Controller {
     
 
     // CHANGE
-    public void change_last(String class_name) throws Exception{
+    private void change_last(String class_name) throws Exception{
         switch(class_name) {
             case Const.TODO:
                 JSONObject todo = create_todo();
+                lastTodoTitle = (String) todo.get(Const.TITLE);
                 Client.sendRequest("PUT", Const.BASE_URL, "todos/"+lastTodoId, todo.toString());
                 break;
             case Const.PROJECT:
                 JSONObject project = create_project();
+                lastProjectTitle = (String) project.get(Const.TITLE);
                 Client.sendRequest("PUT", Const.BASE_URL, "projects/"+lastProjectId, project.toString());
                 break;
             case Const.CATEGORY:
                 JSONObject category = create_category();
+                lastCategoryTitle = (String) category.get(Const.TITLE);
                 Client.sendRequest("PUT", Const.BASE_URL, "categories/"+lastCategoryId, category.toString());
                 break;
         }
     }
 
     // DELETE
-    public void delete_last(String class_name) throws Exception{
+    private void delete_last(String class_name) throws Exception{
         switch(class_name) {
             case Const.TODO:
                 Client.sendRequest("DELETE", Const.BASE_URL, "todos/"+lastTodoId, "");
@@ -111,9 +122,47 @@ public class Controller {
     
 
     // INITIALIZE DATA
-    public void initialize_data(int size, String class_name) throws Exception{
+    private void initialize_data(int size, String class_name) throws Exception{
         for(int i = 0 ; i < size; i++){
             add_random(class_name);
+        }
+    }
+
+    // CHECK REQUEST CORRECTNESS
+    private void verify_request(String request_type, String class_name) throws Exception{
+        String id = "";
+        String title = "";
+        JSONObject obj;
+        switch(class_name) {
+            case Const.TODO:
+                id = lastTodoId;
+                title = lastTodoTitle;
+                break;
+            case Const.PROJECT:
+                id = lastProjectId;
+                title = lastProjectTitle;
+                break;
+            case Const.CATEGORY:
+                id = lastCategoryId;
+                title = lastCategoryTitle;
+                break;
+        }
+
+        switch(request_type){
+            case Const.ADD:
+                obj = Client.sendRequest("GET", Const.BASE_URL, class_name+"?id="+ id, "");
+                String retrieved_id =  (String) obj.getJSONArray(class_name).getJSONObject(0).get(Const.ID);
+                assertEquals(id, retrieved_id);
+                break;
+            case Const.CHANGE:
+                obj = Client.sendRequest("GET", Const.BASE_URL, class_name+"?title="+ title, "");
+                String retrieved_title =  (String) obj.getJSONArray(class_name).getJSONObject(0).get(Const.TITLE);
+                assertEquals(title, retrieved_title);
+                break;
+            case Const.DELETE:
+                int err = Client.getResponseCode("DELETE", Const.BASE_URL, class_name+"/"+ id, "");
+                assertEquals(Const.NOT_FOUND, err);
+                break;
         }
     }
 
@@ -144,12 +193,17 @@ public class Controller {
             long end_time = System.nanoTime();
             total_time += end_time - start_time;
 
+            // Check correctness
+            verify_request(request_type, class_name);
+
             //Undo operation
             switch(request_type){
                 case Const.ADD:
                     delete_last(class_name);
                     break;
                 case Const.CHANGE:
+                    delete_last(class_name);
+                    add_random(class_name);
                     break;
                 case Const.DELETE:
                     add_random(class_name);
