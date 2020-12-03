@@ -9,7 +9,7 @@ import java.io.PrintWriter;
 public class Output {
 
     private static final String filename = "src/test/java/performance.csv";
-    private static final String[] labels = new String[]{"Class", "Size", "Request Type", "Request time(ns)", "CPU (%)", "Memory usage (bytes)"};
+    private static final String[] labels = new String[]{"Class", "Size", "Request Type", "T1 (ns)", "T2 (ns)", "CPU (%)", "Memory usage (bytes)"};
 
     public static void create_csv(){
         write_to_csv(labels, false);

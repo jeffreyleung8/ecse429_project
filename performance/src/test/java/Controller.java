@@ -175,9 +175,12 @@ public class Controller {
     public String[] measure_performance(int size, String request_type, String class_name) throws Exception{
 
         OperatingSystemMXBean operatingSystemMXBean = (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
-        long total_time = 0;
+        long t1 = 0;
+        long t2 = 0;
         double total_cpu = 0.0;
         double total_memory_usage = 0.0;
+
+        long t1_start_time = System.nanoTime();
 
         //Initialize class_name
         initialize_data(size, class_name);
@@ -185,7 +188,7 @@ public class Controller {
         // Do operation
         for(int i = 0; i < Const.NUM_SAMPLES; i++){
 
-            long start_time = System.nanoTime();
+            long t2_start_time = System.nanoTime();
             switch(request_type){
                 case Const.ADD:
                     add_random(class_name);
@@ -198,10 +201,11 @@ public class Controller {
                     break;
             }
 
-            long end_time = System.nanoTime();
-            total_time += end_time - start_time;
+            long t2_end_time = System.nanoTime();
+            t2 += t2_end_time - t2_start_time;
             total_cpu += operatingSystemMXBean.getProcessCpuLoad();
             total_memory_usage = (double) Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+
             // Check correctness
             verify_request(request_type, class_name);
 
@@ -219,13 +223,17 @@ public class Controller {
                     break;
             }
         }
-        
+
+        long t1_end_time = System.nanoTime();
+        t1 += t1_end_time - t1_start_time;
+
         //Calculate performance measures
-        double avg_time = (double) total_time / Const.NUM_SAMPLES;
+        double avg_t1 = (double) t1;
+        double avg_t2 = (double) t2 / Const.NUM_SAMPLES;
         String avg_cpu = df2.format((total_cpu / (double) Const.NUM_SAMPLES) * 100.0);
         String avg_memory = String.valueOf(total_memory_usage / (double) Const.NUM_SAMPLES);
 
-        return new String[]{String.valueOf(avg_time), avg_cpu, avg_memory};
+        return new String[]{String.valueOf(avg_t1), String.valueOf(avg_t2), avg_cpu, avg_memory};
     }
 
 }
