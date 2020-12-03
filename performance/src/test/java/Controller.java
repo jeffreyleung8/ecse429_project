@@ -1,6 +1,11 @@
-import org.json.JSONArray;
 import org.json.JSONObject;
+import java.lang.management.ManagementFactory;
+import com.sun.management.OperatingSystemMXBean;
 import java.security.SecureRandom;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
@@ -17,7 +22,7 @@ public class Controller {
     private String lastTodoTitle;
     private String lastProjectTitle;
     private String lastCategoryTitle;
-
+    private static DecimalFormat df2 = new DecimalFormat("#.##");
 
     public Controller(){}
 
@@ -167,9 +172,12 @@ public class Controller {
     }
 
     // MEASURE PERFORMANCE
-    public long measure_performance(int size, String request_type, String class_name) throws Exception{
+    public String[] measure_performance(int size, String request_type, String class_name) throws Exception{
 
+        OperatingSystemMXBean operatingSystemMXBean = (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
         long total_time = 0;
+        double total_cpu = 0.0;
+        double total_memory_usage = 0.0;
 
         //Initialize class_name
         initialize_data(size, class_name);
@@ -192,7 +200,8 @@ public class Controller {
 
             long end_time = System.nanoTime();
             total_time += end_time - start_time;
-
+            total_cpu += operatingSystemMXBean.getProcessCpuLoad();
+            total_memory_usage = (double) Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
             // Check correctness
             verify_request(request_type, class_name);
 
@@ -211,9 +220,12 @@ public class Controller {
             }
         }
         
-        //Calculate average time of operation
-        long avg_time = total_time / Const.NUM_SAMPLES;
-        return avg_time;
+        //Calculate performance measures
+        double avg_time = (double) total_time / Const.NUM_SAMPLES;
+        String avg_cpu = df2.format((total_cpu / (double) Const.NUM_SAMPLES) * 100.0);
+        String avg_memory = String.valueOf(total_memory_usage / (double) Const.NUM_SAMPLES);
+
+        return new String[]{String.valueOf(avg_time), avg_cpu, avg_memory};
     }
 
 }

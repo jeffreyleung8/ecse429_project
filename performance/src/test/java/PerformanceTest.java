@@ -46,8 +46,8 @@ public class PerformanceTest {
 
             for(String c : classes){
                 for(String type : request_type){
-                    long time = controller.measure_performance(size, type, c);
-                    String[] data = new String[]{c, type, String.valueOf(size), String.valueOf(time)};
+                    String[] results = controller.measure_performance(size, type, c);
+                    String[] data = new String[]{c, type, String.valueOf(size), results[0], results[1], results[2]};
                     Output.write_to_csv(data, true);
                 }
             }
